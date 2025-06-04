@@ -34,6 +34,7 @@ Refer to the original functional specification for detailed schema and milestone
 ## Worker Services
 
 - **Apollo Sync Service** – A .NET 8 worker that runs daily to fetch companies and contacts from Apollo's `/companies/search` and `/people/search` endpoints. Records are upserted into PostgreSQL and any failures are logged to a CosmosDB `sync_failures` container.
+- **Investment Filing ETL** – A Python pipeline that parses SEC, SEDAR+ and CIRO/IROC filings using BeautifulSoup, PyMuPDF and pdfminer. Parsed filings are stored in an `investments` table and enriched via the `/api/enrich/investment-summary` endpoint.
 
 ## AI Enrichment Engine
 

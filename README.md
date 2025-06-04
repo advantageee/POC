@@ -4,9 +4,10 @@ This repository contains a proof-of-concept implementation for the Investor Code
 
 ## Repository Layout
 
-* `backend/` contains two projects:
+* `backend/` contains several services:
   * **InvestorCodex.Api** – Minimal API used for experimentation
   * **InvestorCodex.SyncService** – Worker service that syncs companies and contacts from Apollo into PostgreSQL
+  * **InvestmentFilingETL** – Python scripts that collect and enrich public investment filings
 * `frontend/` – Placeholder for a future Next.js application
 * `docs/` – Project documentation including the full functional specification
 
