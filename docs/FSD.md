@@ -35,3 +35,17 @@ Refer to the original functional specification for detailed schema and milestone
 
 - **Apollo Sync Service** – A .NET 8 worker that runs daily to fetch companies and contacts from Apollo's `/companies/search` and `/people/search` endpoints. Records are upserted into PostgreSQL and any failures are logged to a CosmosDB `sync_failures` container.
 
+## AI Enrichment Engine
+
+- **Service**: Azure Function App
+- **Models**: GPT-4o and `text-embedding-3-large`
+- **Endpoints**
+  - `POST /api/enrich/company`
+  - `POST /api/enrich/investment-summary`
+  - `POST /api/analyze/signal`
+- **Input**: Raw Apollo JSON or parsed signal text
+- **Output**
+  - Company enrichment stored in `companies.summary`, `investment_score`, `tags[]` and `risk_flags[]`
+  - Signal analysis stored in `signals.tags`, `signals.severity` and `signals.summary`
+- **Queue Integration**: Uses Azure Storage Queue or Service Bus to support asynchronous processing
+
