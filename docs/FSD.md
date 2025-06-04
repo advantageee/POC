@@ -62,3 +62,27 @@ This component provides vector storage and similarity search capabilities:
   - `GET /api/embedding/search?q=...` – Performs a vector similarity search with optional filters
 
 The service is implemented as a FastAPI app in `backend/InvestorCodex.EmbeddingService`.
+
+## Dashboard Web App
+
+The frontend is built with Next.js and Tailwind CSS. It consumes the backend APIs to present investment insights.
+
+### Routing Views
+
+- `/companies` – Table view with pagination and filters.
+- `/companies/:id` – Tabbed profile showing **Signals**, **Contacts**, and **Investments**.
+- `/alerts` – Timeline view of signals sorted by AI-assigned severity.
+- `/similar/:id` – Displays embedding based similar company results.
+- `/export` – Allows downloading PDF or CSV reports.
+
+### User Roles
+
+Azure AD B2C provides authentication with three roles:
+
+- **Viewer** – Read-only access to company data.
+- **Analyst** – Can trigger exports and manage alerts.
+- **Admin** – Full access including user management.
+
+## Export & Reporting Engine
+
+When a user clicks the export button, an asynchronous job is placed on an Azure Queue. The job renders HTML templates to PDF via Puppeteer (or DinkToPDF) and generates CSV files directly from PostgreSQL. Files are stored temporarily in Azure Blob Storage and served through time-limited signed URLs.
