@@ -1,0 +1,37 @@
+# Investor Codex Functional Specification (v1.0)
+
+This document outlines the key features and components of the Investor Codex platform. It mirrors the full specification provided in the project planning stages and acts as a reference for contributors.
+
+---
+
+## Tech Stack Overview
+
+- **Frontend**: React, TypeScript, Tailwind (Next.js)
+- **Backend**: .NET 8 / ASP.NET Core Web API
+- **Database**: PostgreSQL, CosmosDB
+- **AI**: Azure OpenAI GPT-4o and embeddings
+- **Vector Search**: Azure Cognitive Search
+- **Auth**: Azure AD B2C
+
+## Core Modules
+
+1. **Company Intelligence**
+   - Pull company data from Apollo.io and enrich it using Azure OpenAI.
+   - Stored fields include name, industry, location and AI-generated summary, tags and risk flags.
+2. **Contact Intelligence**
+   - Similar enrichment for key contacts with persona classification.
+3. **Investment History**
+   - ETL jobs aggregate funding rounds and public filings from multiple sources.
+4. **Signal Tracking**
+   - Tracks real-time signals such as funding, hiring or risk events.
+5. **Similar Company Search**
+   - Embedding based search using Azure Cognitive Search.
+6. **Dashboard Frontend**
+   - Next.js powered user interface to browse companies, alerts and export data.
+
+Refer to the original functional specification for detailed schema and milestone breakdown.
+
+## Worker Services
+
+- **Apollo Sync Service** – A .NET 8 worker that runs daily to fetch companies and contacts from Apollo's `/companies/search` and `/people/search` endpoints. Records are upserted into PostgreSQL and any failures are logged to a CosmosDB `sync_failures` container.
+
