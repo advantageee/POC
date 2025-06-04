@@ -50,3 +50,15 @@ Refer to the original functional specification for detailed schema and milestone
   - Signal analysis stored in `signals.tags`, `signals.severity` and `signals.summary`
 - **Queue Integration**: Uses Azure Storage Queue or Service Bus to support asynchronous processing
 
+
+## Embedding + Similarity Service
+
+This component provides vector storage and similarity search capabilities:
+
+- **Model**: Azure OpenAI `text-embedding-3-large`
+- **Storage**: Azure Cognitive Search index `company-embeddings`
+- **Workflow**
+  - `POST /api/embedding/vectorize` – Stores an embedding vector with metadata
+  - `GET /api/embedding/search?q=...` – Performs a vector similarity search with optional filters
+
+The service is implemented as a FastAPI app in `backend/InvestorCodex.EmbeddingService`.
