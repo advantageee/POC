@@ -24,11 +24,81 @@ import {
 import type { Company, Contact, Investment, Signal } from '@/types';
 
 interface CompanyProfileProps {
-  company: Company;
-  contacts?: Contact[];
-  investments?: Investment[];
-  signals?: Signal[];
+  companyId: string;
 }
+
+// Mock function to fetch company data by ID
+const fetchCompanyData = (id: string) => {
+  // In a real app, this would be an API call
+  const mockCompany: Company = {
+    id,
+    name: `Company ${id}`,
+    domain: `company${id}.com`,
+    industry: 'Technology Software',
+    headcount: 2500,
+    fundingStage: 'Series C',
+    summary: `A leading technology company specializing in innovative software solutions. Company ${id} has been at the forefront of digital transformation, helping businesses modernize their operations through cutting-edge technology platforms.`,
+    investmentScore: 85,
+    tags: ['SaaS', 'Enterprise', 'AI/ML'],
+    riskFlags: ['High Growth', 'Competitive Market'],
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date()
+  };
+
+  const mockContacts: Contact[] = [
+    {
+      id: 'c1',
+      companyId: id,
+      name: 'Sarah Johnson',
+      title: 'CEO & Founder',
+      email: 'sarah.johnson@company.com',
+      linkedInUrl: 'https://linkedin.com/in/sarahjohnson',
+      persona: 'Decision Maker',
+      summary: 'Experienced technology executive with 15+ years in enterprise software.'
+    }
+  ];
+
+  const mockInvestments: Investment[] = [
+    {
+      id: 'i1',
+      companyId: id,
+      company: `Company ${id}`,
+      filingType: 'Series C',
+      filingDate: new Date('2023-06-15'),
+      source: 'SEDAR',
+      url: 'https://sedar.com/filing-123',
+      summary: 'Series C funding round to accelerate product development and market expansion.',
+      investmentScore: 85,
+      amount: 50000000,
+      currency: 'USD',
+      round: 'Series C'
+    }
+  ];
+
+  const mockSignals: Signal[] = [
+    {
+      id: 's1',
+      companyId: id,
+      type: 'funding',
+      title: 'New Funding Round Announced',
+      description: 'Company announced a new $50M Series C funding round',
+      source: 'TechCrunch',
+      url: 'https://techcrunch.com/funding-news',
+      severity: 'high',
+      tags: ['funding', 'growth', 'investment'],
+      summary: 'Strong investor interest indicates positive market sentiment',
+      detectedAt: new Date('2024-01-10'),
+      processedAt: new Date('2024-01-10')
+    }
+  ];
+
+  return {
+    company: mockCompany,
+    contacts: mockContacts,
+    investments: mockInvestments,
+    signals: mockSignals
+  };
+};
 
 const tabs = [
   { id: 'overview', name: 'Overview', icon: BuildingOfficeIcon },
@@ -37,8 +107,11 @@ const tabs = [
   { id: 'investments', name: 'Investments', icon: ChartBarIcon },
 ];
 
-export function CompanyProfile({ company, contacts = [], investments = [], signals = [] }: CompanyProfileProps) {
+export function CompanyProfile({ companyId }: CompanyProfileProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // Fetch company data based on ID
+  const { company, contacts = [], investments = [], signals = [] } = fetchCompanyData(companyId);
 
   // Mock data
   const mockContacts: Contact[] = contacts.length > 0 ? contacts : [
@@ -207,7 +280,7 @@ export function CompanyProfile({ company, contacts = [], investments = [], signa
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {company.tags?.map((tag) => (
+              {company.tags?.map((tag: string) => (
                 <Badge key={tag} variant="default">
                   {tag}
                 </Badge>
@@ -222,7 +295,7 @@ export function CompanyProfile({ company, contacts = [], investments = [], signa
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {company.riskFlags?.map((flag) => (
+              {company.riskFlags?.map((flag: string) => (
                 <Badge key={flag} variant="destructive">
                   {flag}
                 </Badge>

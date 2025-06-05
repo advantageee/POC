@@ -54,12 +54,20 @@ export interface Signal {
   processedAt?: Date;
 }
 
+export type UserRole = 'Viewer' | 'Analyst' | 'Admin';
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'viewer' | 'analyst' | 'admin';
-  permissions: string[];
+  roles: UserRole[];
+  avatar?: string;
+  lastLogin?: Date;
+  preferences?: {
+    theme: 'light' | 'dark';
+    notifications: boolean;
+    defaultView: 'companies' | 'alerts' | 'exports';
+  };
 }
 
 export interface PaginatedResponse<T> {

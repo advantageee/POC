@@ -1,14 +1,11 @@
 import React from 'react';
 import { Bars3Icon, BellIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
+import { User } from '@/types';
 
 interface HeaderProps {
   onMenuToggle: () => void;
-  user?: {
-    name: string;
-    email: string;
-    role: string;
-  };
+  user?: User | null;
 }
 
 export function Header({ onMenuToggle, user }: HeaderProps) {
@@ -43,10 +40,18 @@ export function Header({ onMenuToggle, user }: HeaderProps) {
               <>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                  <p className="text-xs text-gray-500 capitalize">{user.roles[0]?.toLowerCase()}</p>
                 </div>
                 <button className="p-1">
-                  <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="h-8 w-8 rounded-full"
+                    />
+                  ) : (
+                    <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                  )}
                 </button>
               </>
             ) : (

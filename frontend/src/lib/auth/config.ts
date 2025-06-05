@@ -2,10 +2,10 @@ import { Configuration } from '@azure/msal-browser';
 
 export const msalConfig: Configuration = {
   auth: {
-    clientId: process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID || 'your-client-id',
-    authority: process.env.NEXT_PUBLIC_AZURE_AD_AUTHORITY || 'https://your-tenant.b2clogin.com/your-tenant.onmicrosoft.com/B2C_1_signin',
-    knownAuthorities: [process.env.NEXT_PUBLIC_AZURE_AD_KNOWN_AUTHORITY || 'your-tenant.b2clogin.com'],
-    redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI || 'http://localhost:3000',
+    clientId: process.env.NEXT_PUBLIC_AZURE_AD_B2C_CLIENT_ID || 'your-client-id',
+    authority: `https://${process.env.NEXT_PUBLIC_AZURE_AD_B2C_TENANT_NAME || 'your-tenant'}.b2clogin.com/${process.env.NEXT_PUBLIC_AZURE_AD_B2C_TENANT_NAME || 'your-tenant'}.onmicrosoft.com/${process.env.NEXT_PUBLIC_AZURE_AD_B2C_POLICY_SIGNIN || 'B2C_1_signin'}`,
+    knownAuthorities: [`${process.env.NEXT_PUBLIC_AZURE_AD_B2C_TENANT_NAME || 'your-tenant'}.b2clogin.com`],
+    redirectUri: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
   },
   cache: {
     cacheLocation: 'localStorage',

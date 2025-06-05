@@ -3,18 +3,15 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { useUser } from '@/components/auth/UserProvider';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  user?: {
-    name: string;
-    email: string;
-    role: string;
-  };
 }
 
-export function DashboardLayout({ children, user }: DashboardLayoutProps) {
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useUser();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 

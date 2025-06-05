@@ -1,13 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   BuildingOfficeIcon,
   ExclamationTriangleIcon,
   DocumentArrowDownIcon,
   MagnifyingGlassIcon,
-  Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
@@ -17,15 +15,13 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon },
+  { name: 'Companies', href: '/dashboard', icon: BuildingOfficeIcon },
   { name: 'Alerts', href: '/alerts', icon: ExclamationTriangleIcon },
-  { name: 'Export', href: '/export', icon: DocumentArrowDownIcon },
   { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
+  { name: 'Export', href: '/exports', icon: DocumentArrowDownIcon },
 ];
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const router = useRouter();
-
   return (
     <>
       {/* Mobile backdrop */}
