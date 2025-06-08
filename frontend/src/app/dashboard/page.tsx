@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import {
   BuildingOfficeIcon,
@@ -12,9 +14,45 @@ import {
   ExclamationTriangleIcon,
   ArrowTrendingUpIcon,
   ChartBarIcon,
+  CheckCircleIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
+import { companiesApi } from '@/lib/api';
 
 export default function DashboardPage() {
+  const [apiStatus, setApiStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [apiData, setApiData] = useState<any>(null);
+  const [backendHealth, setBackendHealth] = useState<'loading' | 'success' | 'error'>('loading');
+
+  useEffect(() => {
+    // Test API connection
+    const testAPI = async () => {
+      try {
+        const response = await companiesApi.getAll({ page: 1, pageSize: 5 });
+        setApiData(response);
+        setApiStatus('success');
+      } catch (error) {
+        console.error('API test failed:', error);
+        setApiStatus('error');
+      }
+    };
+
+    // Test backend health
+    const testBackend = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/health');
+        if (response.ok) {
+          setBackendHealth('success');
+        } else {
+          setBackendHealth('error');
+        }
+      } catch (error) {
+        setBackendHealth('error');
+      }
+    };    testAPI();
+    testBackend();
+  }, []);
+
   const stats = [
     {
       title: 'Total Companies',
@@ -87,6 +125,66 @@ export default function DashboardPage() {
             <p className="text-gray-600">Welcome back! Here's what's happening with your portfolio.</p>
           </div>
 
+          {/* System Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>System Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-3">
+                  {backendHealth === 'success' ? (
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  ) : backendHealth === 'error' ? (
+                    <XCircleIcon className="h-5 w-5 text-red-500" />
+                  ) : (
+                    <div className="h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  )}
+                  <span className="text-sm">Backend API</span>
+                  <Badge variant={backendHealth === 'success' ? 'success' : backendHealth === 'error' ? 'destructive' : 'secondary'}>
+                    {backendHealth === 'success' ? 'Online' : backendHealth === 'error' ? 'Offline' : 'Checking...'}
+                  </Badge>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  {apiStatus === 'success' ? (
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  ) : apiStatus === 'error' ? (
+                    <XCircleIcon className="h-5 w-5 text-red-500" />
+                  ) : (
+                    <div className="h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  )}
+                  <span className="text-sm">Companies API</span>
+                  <Badge variant={apiStatus === 'success' ? 'success' : apiStatus === 'error' ? 'destructive' : 'secondary'}>
+                    {apiStatus === 'success' ? 'Working' : apiStatus === 'error' ? 'Error' : 'Testing...'}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  <span className="text-sm">Frontend</span>
+                  <Badge variant="success">Running</Badge>
+                </div>
+              </div>
+              
+              {apiStatus === 'success' && apiData && (
+                <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    ✅ Successfully loaded {apiData.total} companies from the API
+                  </p>
+                </div>
+              )}
+              
+              {apiStatus === 'error' && (
+                <div className="mt-4 p-3 bg-red-50 rounded-lg">
+                  <p className="text-sm text-red-800">
+                    ❌ API connection failed. Using fallback data for demo purposes.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
@@ -115,7 +213,8 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Recent Activity */}
             <div className="lg:col-span-2">
-              <Card>                <CardHeader>
+              <Card>
+                <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <ArrowTrendingUpIcon className="w-5 h-5" />
                     <span>Recent Activity</span>
@@ -148,29 +247,35 @@ export default function DashboardPage() {
               </Card>
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions & Feature Tests */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="grid grid-cols-2 gap-4">
                   <Link href="/companies" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <BuildingOfficeIcon className="w-4 h-4 mr-2" />
-                      Browse Companies
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center space-y-2">
+                      <BuildingOfficeIcon className="w-6 h-6" />
+                      <span className="text-sm">Browse Companies</span>
                     </Button>
                   </Link>
                   <Link href="/search" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <ChartBarIcon className="w-4 h-4 mr-2" />
-                      Smart Search
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center space-y-2">
+                      <ChartBarIcon className="w-6 h-6" />
+                      <span className="text-sm">Smart Search</span>
                     </Button>
                   </Link>
-                  <Link href="/exports" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <BanknotesIcon className="w-4 h-4 mr-2" />
-                      Export Data
+                  <Link href="/alerts" className="block">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center space-y-2">
+                      <ExclamationTriangleIcon className="w-6 h-6" />
+                      <span className="text-sm">View Alerts</span>
+                    </Button>
+                  </Link>
+                  <Link href="/api-test" className="block">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center space-y-2">
+                      <ArrowTrendingUpIcon className="w-6 h-6" />
+                      <span className="text-sm">API Test</span>
                     </Button>
                   </Link>
                 </CardContent>

@@ -65,3 +65,68 @@ export function isEmpty(value: any): boolean {
   if (typeof value === 'object') return Object.keys(value).length === 0;
   return false;
 }
+
+/**
+ * Format relative time (e.g., "2 hours ago")
+ */
+export function formatRelativeTime(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+  
+  return formatDate(d);
+}
+
+/**
+ * Get color class for signal severity
+ */
+export function getSeverityColor(severity: string): string {
+  switch (severity?.toLowerCase()) {
+    case 'critical':
+      return 'text-red-600 bg-red-50 border-red-200';
+    case 'high':
+      return 'text-orange-600 bg-orange-50 border-orange-200';
+    case 'medium':
+      return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    case 'low':
+      return 'text-blue-600 bg-blue-50 border-blue-200';
+    case 'info':
+      return 'text-gray-600 bg-gray-50 border-gray-200';
+    default:
+      return 'text-gray-600 bg-gray-50 border-gray-200';
+  }
+}
+
+/**
+ * Get icon for signal type
+ */
+export function getSignalTypeIcon(type: string): string {
+  switch (type?.toLowerCase()) {
+    case 'funding':
+      return '💰';
+    case 'hiring':
+      return '👥';
+    case 'product':
+      return '🚀';
+    case 'partnership':
+      return '🤝';
+    case 'acquisition':
+      return '🏢';
+    case 'ipo':
+      return '📈';
+    case 'risk':
+      return '⚠️';
+    case 'news':
+      return '📰';
+    default:
+      return '📊';
+  }
+}

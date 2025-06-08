@@ -46,7 +46,7 @@ export function UserProvider({ children }: UserProviderProps) {
             id: parsedUser.id,
             email: parsedUser.email,
             name: parsedUser.name,
-            roles: [parsedUser.role as UserRole] || ['Viewer'],
+            roles: parsedUser.role ? [parsedUser.role as UserRole] : ['Viewer'],
             avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(parsedUser.name)}&background=0066cc&color=fff`,
             lastLogin: new Date(),
             preferences: {
@@ -64,9 +64,8 @@ export function UserProvider({ children }: UserProviderProps) {
     }
 
     // Azure B2C flow
-    if (account) {
-      // Extract user information from Azure AD B2C claims
-      const roles = account.idTokenClaims?.extension_Role 
+    if (account) {      // Extract user information from Azure AD B2C claims
+      const roles = account.idTokenClaims?.extension_Role && typeof account.idTokenClaims.extension_Role === 'string'
         ? account.idTokenClaims.extension_Role.split(',').map((r: string) => r.trim() as UserRole)
         : ['Viewer' as UserRole];
 
@@ -88,9 +87,8 @@ export function UserProvider({ children }: UserProviderProps) {
     }
     setLoading(false);
   }, [account]);
-
   const hasRole = (role: UserRole): boolean => {
-    return user?.roles.includes(role) || false;
+    return user?.roles?.includes(role) || false;
   };
   const hasAnyRole = (roles: UserRole[]): boolean => {
     return roles.some(role => hasRole(role));

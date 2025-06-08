@@ -103,12 +103,26 @@ export interface ExportJob {
   error?: string;
 }
 
+// User roles enum for type safety
+export type UserRole = 'Admin' | 'Analyst' | 'Viewer';
+
+// User preferences interface
+export interface UserPreferences {
+  theme: 'light' | 'dark';
+  notifications: boolean;
+  defaultView: 'companies' | 'dashboard' | 'signals';
+}
+
 export interface User {
   id: string;
   email: string;
   name?: string;
-  role?: string;
-  createdAt: Date;
+  role?: string; // For backwards compatibility
+  roles?: UserRole[]; // New array-based roles
+  avatar?: string;
+  lastLogin?: Date;
+  preferences?: UserPreferences;
+  createdAt?: Date;
   lastLoginAt?: Date;
 }
 

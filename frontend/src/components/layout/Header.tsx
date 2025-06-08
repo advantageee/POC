@@ -69,7 +69,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
               <div className="flex items-center space-x-3 pl-3 border-l border-gray-200">
                 <div className="text-right hidden sm:block">
                   <p className="text-callout font-medium text-gray-900">{user.name}</p>
-                  <p className="text-caption-2 text-gray-500 capitalize">{user.roles?.[0]?.toLowerCase()}</p>
+                  <p className="text-caption-2 text-gray-500 capitalize">{user.roles?.[0]?.toLowerCase() || user.role?.toLowerCase() || 'viewer'}</p>
                 </div>
                 <div className="relative">
                   <button 
