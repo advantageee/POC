@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("InvestorCodex.SyncService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1817707a62fbb62ccf5ebbb2523e7782e5658d5c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+362b4f0738655128ac9c6dc1394f77941b0aaa0c")]
 [assembly: System.Reflection.AssemblyProductAttribute("InvestorCodex.SyncService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("InvestorCodex.SyncService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
