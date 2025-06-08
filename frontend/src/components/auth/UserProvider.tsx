@@ -92,16 +92,29 @@ export function UserProvider({ children }: UserProviderProps) {
   const hasRole = (role: UserRole): boolean => {
     return user?.roles.includes(role) || false;
   };
-
   const hasAnyRole = (roles: UserRole[]): boolean => {
     return roles.some(role => hasRole(role));
+  };
+
+  const logout = () => {
+    if (isAuthenticationEnabled) {
+      // Azure B2C logout
+      // Note: You would call instance.logout() here for MSAL
+    } else {
+      // Clear localStorage for demo mode
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      setUser(null);
+      window.location.href = '/login';
+    }
   };
 
   const value: UserContextType = {
     user,
     loading,
     hasRole,
-    hasAnyRole
+    hasAnyRole,
+    logout
   };
 
   return (

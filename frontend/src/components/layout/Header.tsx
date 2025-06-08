@@ -1,14 +1,17 @@
-import React from 'react';
-import { Bars3Icon, BellIcon, UserCircleIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
+import { Bars3Icon, BellIcon, UserCircleIcon, Cog6ToothIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { User } from '@/types';
+import { useUser } from '@/components/auth/UserProvider';
 
 interface HeaderProps {
   onMenuToggle: () => void;
   user?: User | null;
 }
 
-export function Header({ onMenuToggle, user }: HeaderProps) {
+export function Header({ onMenuToggle }: HeaderProps) {
+  const { user, logout } = useUser();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   return (
     <header className="bg-white border-b border-gray-200 h-16 glass-effect sticky top-0 z-30">
       <div className="flex items-center justify-between h-full px-6">
