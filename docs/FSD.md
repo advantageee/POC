@@ -74,6 +74,11 @@ The frontend is built with Next.js and Tailwind CSS. It consumes the backend API
 - `/alerts` – Timeline view of signals sorted by AI-assigned severity.
 - `/similar/:id` – Displays embedding based similar company results.
 - `/export` – Allows downloading PDF or CSV reports.
+- `/api-config` – Admin page for managing backend API endpoints.
+
+The **API Configuration** view lets administrators set base URLs or credentials
+for backend services (API, embedding, and enrichment). Settings are stored
+securely and used by the dashboard when making requests.
 
 ### User Roles
 
