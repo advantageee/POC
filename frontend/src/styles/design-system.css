@@ -1,0 +1,278 @@
+/* Apple Human Interface Guidelines Design System */
+
+:root {
+  /* Apple HIG Colors - System Colors */
+  --color-blue: #007AFF;
+  --color-green: #34C759;
+  --color-indigo: #5856D6;
+  --color-orange: #FF9500;
+  --color-pink: #FF2D92;
+  --color-purple: #AF52DE;
+  --color-red: #FF3B30;
+  --color-teal: #5AC8FA;
+  --color-yellow: #FFCC00;
+  
+  /* Gray Scale */
+  --color-gray-1: #8E8E93;
+  --color-gray-2: #AEAEB2;
+  --color-gray-3: #C7C7CC;
+  --color-gray-4: #D1D1D6;
+  --color-gray-5: #E5E5EA;
+  --color-gray-6: #F2F2F7;
+  
+  /* Semantic Colors - Light Mode */
+  --color-primary: var(--color-blue);
+  --color-secondary: var(--color-gray-1);
+  --color-tertiary: var(--color-gray-2);
+  --color-background: #FFFFFF;
+  --color-background-secondary: var(--color-gray-6);
+  --color-background-tertiary: var(--color-gray-5);
+  --color-surface: #FFFFFF;
+  --color-surface-secondary: var(--color-gray-6);
+  --color-text-primary: #000000;
+  --color-text-secondary: var(--color-gray-1);
+  --color-text-tertiary: var(--color-gray-2);
+  --color-border: var(--color-gray-4);
+  --color-separator: var(--color-gray-4);
+  
+  /* Status Colors */
+  --color-success: var(--color-green);
+  --color-warning: var(--color-orange);
+  --color-error: var(--color-red);
+  --color-info: var(--color-blue);
+  
+  /* Apple HIG Typography Scale */
+  --font-size-large-title: 34px;
+  --font-size-title-1: 28px;
+  --font-size-title-2: 22px;
+  --font-size-title-3: 20px;
+  --font-size-headline: 17px;
+  --font-size-body: 17px;
+  --font-size-callout: 16px;
+  --font-size-subhead: 15px;
+  --font-size-footnote: 13px;
+  --font-size-caption-1: 12px;
+  --font-size-caption-2: 11px;
+  
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-heavy: 800;
+  
+  /* Line Heights */
+  --line-height-large-title: 41px;
+  --line-height-title-1: 34px;
+  --line-height-title-2: 28px;
+  --line-height-title-3: 25px;
+  --line-height-headline: 22px;
+  --line-height-body: 22px;
+  --line-height-callout: 21px;
+  --line-height-subhead: 20px;
+  --line-height-footnote: 18px;
+  --line-height-caption: 16px;
+  
+  /* Spacing Scale - Apple HIG Grid */
+  --spacing-xs: 4px;   /* Extra small */
+  --spacing-sm: 8px;   /* Small */
+  --spacing-md: 16px;  /* Medium */
+  --spacing-lg: 24px;  /* Large */
+  --spacing-xl: 32px;  /* Extra large */
+  --spacing-2xl: 48px; /* 2X large */
+  --spacing-3xl: 64px; /* 3X large */
+  
+  /* Border Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Shadows - Apple HIG Elevations */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 250ms ease-out;
+  --transition-slow: 350ms ease-out;
+}
+
+/* Dark Mode - Apple HIG Dark Colors */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-gray-1: #8E8E93;
+    --color-gray-2: #636366;
+    --color-gray-3: #48484A;
+    --color-gray-4: #3A3A3C;
+    --color-gray-5: #2C2C2E;
+    --color-gray-6: #1C1C1E;
+    
+    --color-background: #000000;
+    --color-background-secondary: var(--color-gray-6);
+    --color-background-tertiary: var(--color-gray-5);
+    --color-surface: var(--color-gray-6);
+    --color-surface-secondary: var(--color-gray-5);
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: var(--color-gray-1);
+    --color-text-tertiary: var(--color-gray-2);
+    --color-border: var(--color-gray-4);
+    --color-separator: var(--color-gray-4);
+  }
+}
+
+/* Typography Classes */
+.text-large-title {
+  font-size: var(--font-size-large-title);
+  line-height: var(--line-height-large-title);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-title-1 {
+  font-size: var(--font-size-title-1);
+  line-height: var(--line-height-title-1);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-title-2 {
+  font-size: var(--font-size-title-2);
+  line-height: var(--line-height-title-2);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-title-3 {
+  font-size: var(--font-size-title-3);
+  line-height: var(--line-height-title-3);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-headline {
+  font-size: var(--font-size-headline);
+  line-height: var(--line-height-headline);
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-body {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-callout {
+  font-size: var(--font-size-callout);
+  line-height: var(--line-height-callout);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-subhead {
+  font-size: var(--font-size-subhead);
+  line-height: var(--line-height-subhead);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-footnote {
+  font-size: var(--font-size-footnote);
+  line-height: var(--line-height-footnote);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-caption-1 {
+  font-size: var(--font-size-caption-1);
+  line-height: var(--line-height-caption);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-caption-2 {
+  font-size: var(--font-size-caption-2);
+  line-height: var(--line-height-caption);
+  font-weight: var(--font-weight-regular);
+}
+
+/* Component Base Styles */
+.surface-primary {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.surface-secondary {
+  background-color: var(--color-surface-secondary);
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass-effect {
+    background: rgba(28, 28, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Animation Presets */
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-normal) ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Focus States */
+.focus-ring {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Interactive States */
+.interactive {
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.interactive:hover {
+  transform: translateY(-1px);
+}
+
+.interactive:active {
+  transform: translateY(0);
+}

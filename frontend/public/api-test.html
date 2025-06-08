@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Integration Test</title>
+</head>
+<body>
+    <h1>Investor Codex API Test</h1>
+    <div id="results"></div>
+    <script>
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing API integration...</p>';
+            
+            try {
+                console.log('Fetching companies from API...');
+                const response = await fetch('http://localhost:5000/api/companies');
+                console.log('Response:', response);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Data received:', data);
+                    resultsDiv.innerHTML = `
+                        <h2>✅ API Integration Successful!</h2>
+                        <p><strong>Companies loaded:</strong> ${data.data?.length || 0}</p>
+                        <h3>Sample Data:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<h2>❌ API Error: ${response.status}</h2>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = `<h2>❌ Network Error: ${error.message}</h2>`;
+            }
+        }
+        
+        // Run test when page loads
+        testAPI();
+    </script>
+</body>
+</html>
