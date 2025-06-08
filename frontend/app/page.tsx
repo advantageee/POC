@@ -1,11 +1,27 @@
-export default function Home() {
-  return (
-    <div>
-      <h1>Hello World</h1>
-      <p>The frontend is working!</p>
-    </div>
-  );
+import Link from 'next/link';
+import { 
+  BuildingOfficeIcon,
+  MagnifyingGlassIcon,
+  BoltIcon,
+  ChartBarIcon
+} from '@heroicons/react/24/outline';
+
+interface Feature {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
 }
+
+export default function Home() {
+  const features: Feature[] = [
+    {
+      icon: BuildingOfficeIcon,
+      title: 'Company Intelligence',
+      description: 'Deep insights into company profiles, leadership, funding history, and business metrics'
+    },
+    {
+      icon: ChartBarIcon,
+      title: 'Investment Tracking',
       description: 'Monitor funding rounds, track investment opportunities, and analyze market trends'
     },
     {
@@ -32,10 +48,11 @@ export default function Home() {
               </div>
               <span className="text-xl font-bold text-gray-900">Investor Codex</span>
             </div>
-            <Link href="/dashboard">
-              <Button variant="primary">
-                Get Started
-              </Button>
+            <Link 
+              href="/dashboard"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              Get Started
             </Link>
           </div>
         </div>
@@ -53,15 +70,17 @@ export default function Home() {
             real-time market signals, and AI-driven insights.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/dashboard">
-              <Button variant="primary" size="lg">
-                Explore Companies
-              </Button>
+            <Link 
+              href="/dashboard"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Explore Companies
             </Link>
-            <Link href="/search">
-              <Button variant="outline" size="lg">
-                Search & Discover
-              </Button>
+            <Link 
+              href="/search"
+              className="border border-gray-300 hover:border-gray-400 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Search & Discover
             </Link>
           </div>
         </div>
@@ -107,10 +126,11 @@ export default function Home() {
           <p className="text-xl text-blue-100 mb-8">
             Join thousands of investors using AI-powered intelligence to make better decisions.
           </p>
-          <Link href="/dashboard">
-            <Button variant="secondary" size="lg">
-              Start Exploring
-            </Button>
+          <Link 
+            href="/dashboard"
+            className="bg-white hover:bg-gray-100 text-blue-600 px-6 py-3 rounded-lg font-medium transition-colors inline-block"
+          >
+            Start Exploring
           </Link>
         </div>
       </section>
