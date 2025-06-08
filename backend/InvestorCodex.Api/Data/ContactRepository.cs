@@ -63,12 +63,10 @@ public class ContactRepository : IContactRepository
             ORDER BY updated_at DESC
             LIMIT @limit OFFSET @offset";
 
-        var contacts = await connection.QueryAsync<Contact>(dataSql, parameters);
-
-        return new PaginatedResponse<Contact>
+        var contacts = await connection.QueryAsync<Contact>(dataSql, parameters);        return new PaginatedResponse<Contact>
         {
-            Items = contacts.ToArray(),
-            TotalItems = totalItems,
+            Data = contacts.ToList(),
+            Total = totalItems,
             Page = page,
             PageSize = pageSize,
             TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)

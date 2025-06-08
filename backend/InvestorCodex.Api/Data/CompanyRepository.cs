@@ -87,12 +87,10 @@ public class CompanyRepository : ICompanyRepository
             ORDER BY updated_at DESC
             LIMIT @limit OFFSET @offset";
 
-        var companies = await connection.QueryAsync<Company>(dataSql, parameters);
-
-        return new PaginatedResponse<Company>
+        var companies = await connection.QueryAsync<Company>(dataSql, parameters);        return new PaginatedResponse<Company>
         {
-            Items = companies.ToArray(),
-            TotalItems = totalItems,
+            Data = companies.ToList(),
+            Total = totalItems,
             Page = page,
             PageSize = pageSize,
             TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)

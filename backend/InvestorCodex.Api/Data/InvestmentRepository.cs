@@ -84,12 +84,10 @@ public class InvestmentRepository : IInvestmentRepository
             ORDER BY i.filing_date DESC
             LIMIT @limit OFFSET @offset";
 
-        var investments = await connection.QueryAsync<Investment>(dataSql, parameters);
-
-        return new PaginatedResponse<Investment>
+        var investments = await connection.QueryAsync<Investment>(dataSql, parameters);        return new PaginatedResponse<Investment>
         {
-            Items = investments.ToArray(),
-            TotalItems = totalItems,
+            Data = investments.ToList(),
+            Total = totalItems,
             Page = page,
             PageSize = pageSize,
             TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
