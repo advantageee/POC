@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using InvestorCodex.Api.Configuration;
+using InvestorCodex.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,11 @@ builder.Services.Configure<ApolloSettings>(
     builder.Configuration.GetSection(ApolloSettings.SectionName));
 builder.Services.Configure<TwitterAPISettings>(
     builder.Configuration.GetSection(TwitterAPISettings.SectionName));
+
+// Add repository services
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<IContactRepository, ContactRepository>();
+builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
 
 // Add services to the container
 builder.Services.AddControllers();

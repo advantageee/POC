@@ -1,24 +1,11 @@
-'use client';
-
-import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { 
-  BuildingOfficeIcon, 
-  ChartBarIcon, 
-  MagnifyingGlassIcon,
-  BoltIcon
-} from '@heroicons/react/24/outline';
-
 export default function Home() {
-  const features = [
-    {
-      icon: BuildingOfficeIcon,
-      title: 'Company Intelligence',
-      description: 'Comprehensive company profiles with AI-powered insights and investment scoring'
-    },
-    {
-      icon: ChartBarIcon,
-      title: 'Investment Tracking',
+  return (
+    <div>
+      <h1>Hello World</h1>
+      <p>The frontend is working!</p>
+    </div>
+  );
+}
       description: 'Monitor funding rounds, track investment opportunities, and analyze market trends'
     },
     {
