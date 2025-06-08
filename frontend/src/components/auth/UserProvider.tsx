@@ -3,12 +3,14 @@
 import { useAccount, useMsal } from '@azure/msal-react';
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { UserRole, User } from '@/types';
+import { isAuthenticationEnabled } from '@/lib/auth/config';
 
 interface UserContextType {
   user: User | null;
   loading: boolean;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
+  logout: () => void;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -32,6 +34,36 @@ export function UserProvider({ children }: UserProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isAuthenticationEnabled) {
+      // Use localStorage for demo mode
+      const localUser = localStorage.getItem('user');
+      const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+      
+      if (localUser && isAuth) {
+        try {
+          const parsedUser = JSON.parse(localUser);
+          setUser({
+            id: parsedUser.id,
+            email: parsedUser.email,
+            name: parsedUser.name,
+            roles: [parsedUser.role as UserRole] || ['Viewer'],
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(parsedUser.name)}&background=0066cc&color=fff`,
+            lastLogin: new Date(),
+            preferences: {
+              theme: 'light',
+              notifications: true,
+              defaultView: 'companies'
+            }
+          });
+        } catch (e) {
+          console.error('Error parsing user from localStorage:', e);
+        }
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Azure B2C flow
     if (account) {
       // Extract user information from Azure AD B2C claims
       const roles = account.idTokenClaims?.extension_Role 
