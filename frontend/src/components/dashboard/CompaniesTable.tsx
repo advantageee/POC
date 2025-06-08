@@ -21,32 +21,90 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
+import { companiesApi } from '@/lib/api';
 import type { Company, CompanyFilters, PaginatedResponse } from '@/types';
 
 interface CompaniesTableProps {
-  companies?: PaginatedResponse<Company>;
-  loading?: boolean;
-  onFiltersChange?: (filters: CompanyFilters) => void;
-  onPageChange?: (page: number) => void;
+  className?: string;
 }
 
-export function CompaniesTable({ 
-  companies, 
-  loading = false, 
-  onFiltersChange, 
-  onPageChange 
-}: CompaniesTableProps) {
+export function CompaniesTable({ className }: CompaniesTableProps) {
+  const [companies, setCompanies] = useState<PaginatedResponse<Company> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<CompanyFilters>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  // Fetch companies data
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('🔄 Fetching companies from API...', {
+          page: currentPage,
+          pageSize,
+          filters
+        });
+        
+        const response = await companiesApi.getAll({
+          page: currentPage,
+          pageSize,
+          filters,
+        });
+        
+        console.log('✅ Companies API response:', response);
+        setCompanies(response);
+      } catch (err) {
+        console.error('❌ Failed to fetch companies from API:', err);
+        setError('Failed to load companies from API, using fallback data');
+        
+        // Fallback to mock data for demo
+        console.log('📋 Using fallback mock data');
+        setCompanies({
+          data: [
+            {
+              id: '1',
+              name: 'TechCorp Inc. (Fallback)',
+              domain: 'techcorp.com',
+              industry: 'Software',
+              headcount: 250,
+              fundingStage: 'Series B',
+              summary: 'AI-powered enterprise software solutions (fallback data)',
+              investmentScore: 85,
+              tags: ['AI', 'Enterprise', 'SaaS'],
+              riskFlags: [],
+              createdAt: new Date('2024-01-15'),
+              updatedAt: new Date('2024-06-01'),
+            },
+          ],
+          page: 1,
+          pageSize: 10,
+          total: 1,
+          totalPages: 1,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, [currentPage, filters]);
 
   const handleFilterChange = (key: keyof CompanyFilters, value: any) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    onFiltersChange?.(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handleSearch = (search: string) => {
     handleFilterChange('search', search);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const getInvestmentScoreColor = (score?: number) => {
@@ -55,8 +113,7 @@ export function CompaniesTable({
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
-
-  const mockCompanies: PaginatedResponse<Company> = companies || {
+  const displayData = companies || {
     data: [
       {
         id: '1',
@@ -72,48 +129,31 @@ export function CompaniesTable({
         createdAt: new Date('2024-01-15'),
         updatedAt: new Date('2024-06-01'),
       },
-      {
-        id: '2',
-        name: 'BioInnovate Ltd.',
-        domain: 'bioinnovate.com',
-        industry: 'Biotechnology',
-        headcount: 85,
-        fundingStage: 'Series A',
-        summary: 'Novel drug discovery platform',
-        investmentScore: 72,
-        tags: ['Biotech', 'Drug Discovery'],
-        riskFlags: ['Regulatory Risk'],
-        createdAt: new Date('2024-02-10'),
-        updatedAt: new Date('2024-05-28'),
-      },
-      {
-        id: '3',
-        name: 'GreenEnergy Solutions',
-        domain: 'greenenergy.com',
-        industry: 'Clean Energy',
-        headcount: 120,
-        fundingStage: 'Seed',
-        summary: 'Solar panel manufacturing and installation',
-        investmentScore: 65,
-        tags: ['Clean Energy', 'Manufacturing'],
-        riskFlags: [],
-        createdAt: new Date('2024-03-05'),
-        updatedAt: new Date('2024-06-02'),
-      },
     ],
-    total: 156,
     page: 1,
-    pageSize: 20,
-    totalPages: 8,
+    pageSize: 10,
+    total: 1,
+    totalPages: 1,
   };
 
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
-      <Card>
-        <CardHeader>
+      <Card>        <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Companies</CardTitle>
+            <div className="flex items-center space-x-3">
+              <CardTitle>Companies</CardTitle>
+              {error && (
+                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                  Using Fallback Data
+                </Badge>
+              )}
+              {!error && !loading && (
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  Live API Data
+                </Badge>
+              )}
+            </div>
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
@@ -188,7 +228,7 @@ export function CompaniesTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockCompanies.data.map((company) => (
+                {displayData.data.map((company: Company) => (
                   <TableRow key={company.id}>
                     <TableCell>
                       <div>
@@ -213,7 +253,7 @@ export function CompaniesTable({
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {company.tags?.slice(0, 2).map((tag) => (
+                        {company.tags?.slice(0, 2).map((tag: string) => (
                           <Badge key={tag} variant="default" className="text-xs">
                             {tag}
                           </Badge>
@@ -235,29 +275,27 @@ export function CompaniesTable({
       </Card>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-700">
-          Showing {((mockCompanies.page - 1) * mockCompanies.pageSize) + 1} to{' '}
-          {Math.min(mockCompanies.page * mockCompanies.pageSize, mockCompanies.total)} of{' '}
-          {mockCompanies.total} results
+      <div className="flex items-center justify-between">        <div className="text-sm text-gray-700">
+          Showing {((displayData.page - 1) * displayData.pageSize) + 1} to{' '}
+          {Math.min(displayData.page * displayData.pageSize, displayData.total)} of{' '}
+          {displayData.total} results
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
+        <div className="flex items-center space-x-2">          <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange?.(mockCompanies.page - 1)}
-            disabled={mockCompanies.page === 1}
+            onClick={() => handlePageChange(displayData.page - 1)}
+            disabled={displayData.page === 1}
           >
             <ChevronLeftIcon className="h-4 w-4" />
           </Button>
           <span className="text-sm">
-            Page {mockCompanies.page} of {mockCompanies.totalPages}
+            Page {displayData.page} of {displayData.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange?.(mockCompanies.page + 1)}
-            disabled={mockCompanies.page === mockCompanies.totalPages}
+            onClick={() => handlePageChange(displayData.page + 1)}
+            disabled={displayData.page === displayData.totalPages}
           >
             <ChevronRightIcon className="h-4 w-4" />
           </Button>

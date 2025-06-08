@@ -253,10 +253,8 @@ export function SimilarCompaniesSearch({
                               </span>
                             </div>
                           )}
-                        </div>
-                        
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/companies/${company.id}`}>
+                        </div>                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/company/${company.id}`}>
                             View Details
                           </Link>
                         </Button>

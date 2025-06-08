@@ -16,14 +16,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 animate-fade-in">
       <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
       
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 transition-all duration-300">
         <Header onMenuToggle={toggleSidebar} user={user} />
         
-        <main className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main className="py-8 animate-slide-up">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
             {children}
           </div>
         </main>
