@@ -19,6 +19,7 @@ builder.Services.Configure<TwitterAPISettings>(
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
+builder.Services.AddScoped<ISignalRepository, SignalRepository>();
 
 // Add services to the container
 builder.Services.AddControllers();

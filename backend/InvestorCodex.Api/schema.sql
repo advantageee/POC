@@ -1,6 +1,7 @@
 -- Create database schema for InvestorCodex
 
 -- Drop existing tables if they exist
+DROP TABLE IF EXISTS signals;
 DROP TABLE IF EXISTS investments;
 DROP TABLE IF EXISTS contacts;
 DROP TABLE IF EXISTS companies;
@@ -50,6 +51,20 @@ CREATE TABLE investments (
     investment_score REAL,
     filing_type VARCHAR(100),
     company VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Signals table
+CREATE TABLE signals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES companies(id),
+    type VARCHAR(100),
+    severity VARCHAR(50),
+    description TEXT,
+    url VARCHAR(500),
+    summary TEXT,
+    risk_score REAL DEFAULT 0.0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -176,8 +191,60 @@ SELECT
     '2004-08-19'::timestamp,
     'SEC',
     'Google went public in 2004',
-    9.1,
-    'IPO',
+    9.1,    'IPO',
     'Alphabet Inc.'
+FROM companies c WHERE c.name = 'Alphabet Inc.'
+ON CONFLICT DO NOTHING;
+
+-- Insert sample signals data
+INSERT INTO signals (company_id, type, severity, description, url, summary, risk_score)
+SELECT 
+    c.id,
+    'News',
+    'Medium',
+    'Apple announces new product line expansion',
+    'https://news.apple.com/product-line',
+    'Apple is expanding its product line with new innovative devices',
+    5.2
+FROM companies c WHERE c.name = 'Apple Inc.'
+UNION ALL
+SELECT 
+    c.id,
+    'Financial',
+    'Low',
+    'Microsoft reports strong quarterly earnings',
+    'https://investor.microsoft.com/earnings',
+    'Microsoft exceeded earnings expectations for Q3',
+    2.1
+FROM companies c WHERE c.name = 'Microsoft Corporation'
+UNION ALL
+SELECT 
+    c.id,
+    'Regulatory',
+    'High',
+    'Amazon faces antitrust investigation',
+    'https://news.amazon.com/antitrust',
+    'Amazon is under scrutiny for potential monopolistic practices',
+    8.5
+FROM companies c WHERE c.name = 'Amazon.com Inc.'
+UNION ALL
+SELECT 
+    c.id,
+    'Technical',
+    'Medium',
+    'Tesla recalls vehicles due to software issue',
+    'https://tesla.com/safety-recall',
+    'Tesla is recalling certain model years due to autopilot software concerns',
+    6.3
+FROM companies c WHERE c.name = 'Tesla Inc.'
+UNION ALL
+SELECT 
+    c.id,
+    'Leadership',
+    'Low',
+    'Google announces new AI research initiative',
+    'https://ai.google/research',
+    'Google is launching a new AI research division focused on ethical AI',
+    3.1
 FROM companies c WHERE c.name = 'Alphabet Inc.'
 ON CONFLICT DO NOTHING;
