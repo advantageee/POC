@@ -28,9 +28,7 @@ public class CompanyRepository : ICompanyRepository
         using var connection = new NpgsqlConnection(_connectionString);
         
         var whereConditions = new List<string>();
-        var parameters = new DynamicParameters();
-
-        // Build WHERE clause
+        var parameters = new DynamicParameters();        // Build WHERE clause
         if (!string.IsNullOrEmpty(search))
         {
             whereConditions.Add("(name ILIKE @search OR industry ILIKE @search OR summary ILIKE @search)");
