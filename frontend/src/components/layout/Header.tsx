@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Bars3Icon, BellIcon, UserCircleIcon, Cog6ToothIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
