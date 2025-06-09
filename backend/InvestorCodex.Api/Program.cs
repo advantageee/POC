@@ -22,7 +22,7 @@ builder.Services.Configure<ContextFeedSettings>(
 builder.Services.AddHttpClient<IApolloService, ApolloService>();
 builder.Services.AddHttpClient<ITwitterService, TwitterService>();
 builder.Services.AddHttpClient<IContextFeedService, ContextFeedService>();
-builder.Services.AddHttpClient<EmbeddingController>();
+builder.Services.AddHttpClient(); // For EmbeddingController
 
 // Add repository services
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();

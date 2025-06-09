@@ -126,7 +126,7 @@ public class ContextFeedService : IContextFeedService
                         Link = "https://example.com/ai-startup-funding",
                         PublishedAt = now.AddHours(-2),
                         Source = "TechCrunch",
-                        Topics = new[] { "AI", "Funding", "Series A" },
+                        Topics = new List<string> { "AI", "Funding", "Series A" },
                         Confidence = 0.9f
                     },
                     new()
@@ -137,7 +137,7 @@ public class ContextFeedService : IContextFeedService
                         Link = "https://example.com/vc-trends-q4",
                         PublishedAt = now.AddHours(-4),
                         Source = "VentureBeat",
-                        Topics = new[] { "Trends", "SaaS", "Fintech" },
+                        Topics = new List<string> { "Trends", "SaaS", "Fintech" },
                         Confidence = 0.85f
                     },
                     new()
@@ -148,7 +148,7 @@ public class ContextFeedService : IContextFeedService
                         Link = "https://example.com/climate-tech-fund",
                         PublishedAt = now.AddHours(-6),
                         Source = "GreenTech Media",
-                        Topics = new[] { "Climate Tech", "Fund Launch", "Sustainability" },
+                        Topics = new List<string> { "Climate Tech", "Fund Launch", "Sustainability" },
                         Confidence = 0.88f
                     }
                 }
@@ -168,7 +168,7 @@ public class ContextFeedService : IContextFeedService
                         Link = "https://example.com/active-vcs-weekly",
                         PublishedAt = now.AddDays(-1),
                         Source = "PitchBook",
-                        Topics = new[] { "VC Activity", "Deal Flow", "Analysis" },
+                        Topics = new List<string> { "VC Activity", "Deal Flow", "Analysis" },
                         Confidence = 0.92f
                     },
                     new()
@@ -179,7 +179,7 @@ public class ContextFeedService : IContextFeedService
                         Link = "https://example.com/emerging-markets",
                         PublishedAt = now.AddDays(-2),
                         Source = "Crunchbase",
-                        Topics = new[] { "Emerging Markets", "International", "Growth" },
+                        Topics = new List<string> { "Emerging Markets", "International", "Growth" },
                         Confidence = 0.87f
                     }
                 }
@@ -199,7 +199,7 @@ public class ContextFeedService : IContextFeedService
                         Link = "https://example.com/fallback",
                         PublishedAt = now,
                         Source = "System",
-                        Topics = new[] { "System", "Fallback" },
+                        Topics = new List<string> { "System", "Fallback" },
                         Confidence = 0.5f
                     }
                 }

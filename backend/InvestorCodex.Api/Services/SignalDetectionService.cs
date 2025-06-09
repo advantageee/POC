@@ -131,11 +131,10 @@ public class SignalDetectionService : ISignalDetectionService
         foreach (var (signalType, (keywords, baseScore, severity)) in _signalPatterns)
         {
             if (keywords.Any(keyword => lowerText.Contains(keyword)))
-            {
-                var signal = new Signal
+            {                var signal = new Signal
                 {
                     Id = Guid.NewGuid(),
-                    CompanyId = companyId,
+                    CompanyId = companyId ?? Guid.Empty,
                     Type = signalType,
                     Severity = severity,
                     Description = text.Length > 500 ? text[..500] + "..." : text,
@@ -203,13 +202,12 @@ public class SignalDetectionService : ISignalDetectionService
     }
 
     public async Task<List<Signal>> GetHighConfidenceSignalsAsync(float minConfidence = 0.7f, int limit = 50)
-    {
-        try
+    {        try
         {
-            var allSignals = await _signalRepository.GetSignalsAsync(1, limit * 2); // Get more to filter
+            var allSignalsResult = await _signalRepository.GetSignalsAsync(1, limit * 2); // Get more to filter
             var highConfidenceSignals = new List<Signal>();
 
-            foreach (var signal in allSignals.Data)
+            foreach (var signal in allSignalsResult.signals)
             {
                 var confidence = await CalculateSignalConfidenceAsync(signal);
                 if (confidence >= minConfidence)

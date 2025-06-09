@@ -32,9 +32,7 @@ public class EmbeddingController : ControllerBase
             if (!string.IsNullOrEmpty(industry))
                 queryParams += $"&industry={Uri.EscapeDataString(industry)}";
             if (!string.IsNullOrEmpty(fundingStage))
-                queryParams += $"&funding_stage={Uri.EscapeDataString(fundingStage)}";
-
-            var response = await _httpClient.GetAsync($"{_embeddingServiceUrl}/api/embedding/search?{queryParams}");
+                queryParams += $"&funding_stage={Uri.EscapeDataString(fundingStage)}";        var response = await _httpClient.GetAsync($"{_embeddingServiceUrl}/api/embedding/search?{queryParams}");
             
             if (response.IsSuccessStatusCode)
             {
@@ -50,7 +48,7 @@ public class EmbeddingController : ControllerBase
                     Name = r.Metadata.TryGetValue("name", out var name) ? name?.ToString() ?? "Unknown" : "Unknown",
                     Industry = r.Metadata.TryGetValue("industry", out var ind) ? ind?.ToString() : null,
                     SimilarityScore = (float)r.Score,
-                    Description = r.Text ?? r.Metadata.TryGetValue("description", out var desc) ? desc?.ToString() : null
+                    Description = r.Text ?? (r.Metadata.TryGetValue("description", out var desc) ? desc?.ToString() : null)
                 }).ToList() ?? new List<SimilarCompany>();
 
                 return Ok(similarCompanies);
@@ -72,8 +70,7 @@ public class EmbeddingController : ControllerBase
     public async Task<ActionResult<List<SimilarCompany>>> GetSimilarCompanies(Guid companyId, [FromQuery] int limit = 10)
     {
         try
-        {
-            // For now, we'll use the search endpoint with a company ID
+        {            // For now, we'll use the search endpoint with a company ID
             // In a real implementation, we'd first get the company description and then search
             var response = await _httpClient.GetAsync($"{_embeddingServiceUrl}/api/embedding/search?q=company:{companyId}&limit={limit}");
             
@@ -91,7 +88,7 @@ public class EmbeddingController : ControllerBase
                     Name = r.Metadata.TryGetValue("name", out var name) ? name?.ToString() ?? "Unknown" : "Unknown",
                     Industry = r.Metadata.TryGetValue("industry", out var ind) ? ind?.ToString() : null,
                     SimilarityScore = (float)r.Score,
-                    Description = r.Text ?? r.Metadata.TryGetValue("description", out var desc) ? desc?.ToString() : null
+                    Description = r.Text ?? (r.Metadata.TryGetValue("description", out var desc2) ? desc2?.ToString() : null)
                 }).ToList() ?? new List<SimilarCompany>();
 
                 return Ok(similarCompanies);

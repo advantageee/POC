@@ -14,6 +14,8 @@ public class Signal
     public string? Summary { get; set; }
     public DateTime DetectedAt { get; set; } = DateTime.UtcNow;
     public DateTime ProcessedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public float Confidence { get; set; } = 0.5f;
     
     // For responses that include company info
     public Company? Company { get; set; }
