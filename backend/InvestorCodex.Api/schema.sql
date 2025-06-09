@@ -248,3 +248,42 @@ SELECT
     3.1
 FROM companies c WHERE c.name = 'Alphabet Inc.'
 ON CONFLICT DO NOTHING;
+
+-- Create indexes for performance optimization (from FSD requirements)
+CREATE INDEX IF NOT EXISTS idx_companies_domain ON companies(domain);
+CREATE INDEX IF NOT EXISTS idx_companies_name ON companies(name);
+CREATE INDEX IF NOT EXISTS idx_companies_industry ON companies(industry);
+CREATE INDEX IF NOT EXISTS idx_companies_funding_stage ON companies(funding_stage);
+CREATE INDEX IF NOT EXISTS idx_companies_investment_score ON companies(investment_score);
+CREATE INDEX IF NOT EXISTS idx_companies_created_at ON companies(created_at);
+
+CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email);
+CREATE INDEX IF NOT EXISTS idx_contacts_company_id ON contacts(company_id);
+CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(name);
+CREATE INDEX IF NOT EXISTS idx_contacts_title ON contacts(title);
+
+CREATE INDEX IF NOT EXISTS idx_investments_company_id ON investments(company_id);
+CREATE INDEX IF NOT EXISTS idx_investments_filing_date ON investments(filing_date);
+CREATE INDEX IF NOT EXISTS idx_investments_round ON investments(round);
+CREATE INDEX IF NOT EXISTS idx_investments_amount ON investments(amount);
+
+CREATE INDEX IF NOT EXISTS idx_signals_company_id ON signals(company_id);
+CREATE INDEX IF NOT EXISTS idx_signals_type ON signals(type);
+CREATE INDEX IF NOT EXISTS idx_signals_severity ON signals(severity);
+CREATE INDEX IF NOT EXISTS idx_signals_risk_score ON signals(risk_score);
+CREATE INDEX IF NOT EXISTS idx_signals_created_at ON signals(created_at);
+
+-- Composite indexes for common queries
+CREATE INDEX IF NOT EXISTS idx_companies_industry_funding ON companies(industry, funding_stage);
+CREATE INDEX IF NOT EXISTS idx_companies_score_industry ON companies(investment_score, industry);
+
+-- Text search indexes (for PostgreSQL full-text search)
+CREATE INDEX IF NOT EXISTS idx_companies_name_gin ON companies USING gin(to_tsvector('english', name));
+CREATE INDEX IF NOT EXISTS idx_companies_summary_gin ON companies USING gin(to_tsvector('english', summary));
+CREATE INDEX IF NOT EXISTS idx_contacts_name_gin ON contacts USING gin(to_tsvector('english', name));
+
+COMMENT ON INDEX idx_companies_domain IS 'Fast duplicate detection by domain';
+COMMENT ON INDEX idx_companies_name IS 'Fast duplicate detection by name';
+COMMENT ON INDEX idx_contacts_email IS 'Fast duplicate detection by email';
+COMMENT ON INDEX idx_companies_name_gin IS 'Full-text search on company names';
+COMMENT ON INDEX idx_companies_summary_gin IS 'Full-text search on company summaries';

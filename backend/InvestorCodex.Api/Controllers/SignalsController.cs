@@ -11,15 +11,18 @@ public class SignalsController : ControllerBase
 {
     private readonly ISignalRepository _signalRepository;
     private readonly ITwitterService _twitterService;
+    private readonly ISignalDetectionService _signalDetectionService;
     private readonly ILogger<SignalsController> _logger;
 
     public SignalsController(
         ISignalRepository signalRepository, 
         ITwitterService twitterService,
+        ISignalDetectionService signalDetectionService,
         ILogger<SignalsController> logger)
     {
         _signalRepository = signalRepository;
         _twitterService = twitterService;
+        _signalDetectionService = signalDetectionService;
         _logger = logger;
     }
 
@@ -30,11 +33,56 @@ public class SignalsController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] Guid? companyId = null,
         [FromQuery] string[]? types = null,
-        [FromQuery] string[]? severities = null)    {
+        [FromQuery] string[]? severities = null,
+        [FromQuery] float? minConfidence = null)
+    {
         try
         {
-            // Try to get real signals from Twitter first
-            _logger.LogInformation("Fetching signals from Twitter API");
+            // Get high-confidence signals using the enhanced detection service
+            _logger.LogInformation("Fetching high-confidence signals");
+            var highConfidenceSignals = await _signalDetectionService.GetHighConfidenceSignalsAsync(
+                minConfidence ?? 0.5f, 
+                pageSize * 2 // Get more to allow for filtering
+            );
+
+            // Apply filters
+            var filteredSignals = highConfidenceSignals.AsQueryable();
+
+            if (companyId.HasValue)
+                filteredSignals = filteredSignals.Where(s => s.CompanyId == companyId.Value);
+
+            if (types != null && types.Any())
+                filteredSignals = filteredSignals.Where(s => types.Contains(s.Type ?? ""));
+
+            if (severities != null && severities.Any())
+                filteredSignals = filteredSignals.Where(s => severities.Contains(s.Severity ?? ""));
+
+            if (!string.IsNullOrEmpty(search))
+                filteredSignals = filteredSignals.Where(s => 
+                    (s.Description != null && s.Description.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                    (s.Summary != null && s.Summary.Contains(search, StringComparison.OrdinalIgnoreCase)));
+
+            var results = filteredSignals
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();            if (results.Any())
+            {
+                _logger.LogInformation("Successfully fetched {Count} high-confidence signals", results.Count);
+                
+                var highConfidenceResponse = new PaginatedResponse<Signal>
+                {
+                    Data = results,
+                    Total = filteredSignals.Count(),
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling((double)filteredSignals.Count() / pageSize)
+                };
+
+                return Ok(highConfidenceResponse);
+            }
+
+            // Fallback to Twitter signals if no high-confidence signals available
+            _logger.LogInformation("No high-confidence signals found, falling back to Twitter API");
             var twitterSignals = await _twitterService.GetSignalsAsync(search, pageSize);
             
             if (twitterSignals.Any())
@@ -49,7 +97,7 @@ public class SignalsController : ControllerBase
                     PageSize = pageSize,
                     TotalPages = (int)Math.Ceiling((double)twitterSignals.Count / pageSize)
                 };
-                
+
                 return Ok(twitterResponse);
             }            // Fallback to database if Twitter fails
             _logger.LogInformation("Twitter API returned no data, falling back to database");
@@ -57,7 +105,7 @@ public class SignalsController : ControllerBase
             var signals = result.signals;
             var totalCount = result.totalCount;
             
-            var response = new PaginatedResponse<Signal>
+            var databaseResponse = new PaginatedResponse<Signal>
             {
                 Data = signals.ToList(),
                 Total = totalCount,
@@ -66,7 +114,7 @@ public class SignalsController : ControllerBase
                 TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
             };
 
-            return Ok(response);
+            return Ok(databaseResponse);
         }        catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching signals");

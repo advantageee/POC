@@ -22,6 +22,7 @@ builder.Services.Configure<ContextFeedSettings>(
 builder.Services.AddHttpClient<IApolloService, ApolloService>();
 builder.Services.AddHttpClient<ITwitterService, TwitterService>();
 builder.Services.AddHttpClient<IContextFeedService, ContextFeedService>();
+builder.Services.AddHttpClient<EmbeddingController>();
 
 // Add repository services
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
@@ -33,6 +34,7 @@ builder.Services.AddScoped<ISignalRepository, SignalRepository>();
 builder.Services.AddScoped<IApolloService, ApolloService>();
 builder.Services.AddScoped<ITwitterService, TwitterService>();
 builder.Services.AddScoped<IContextFeedService, ContextFeedService>();
+builder.Services.AddScoped<ISignalDetectionService, SignalDetectionService>();
 
 // Add services to the container
 builder.Services.AddControllers();
