@@ -36,7 +36,7 @@ public class TwitterService : ITwitterService
                 : $"{companyName} funding investment OR acquisition OR partnership -is:retweet lang:en";
 
             var encodedQuery = Uri.EscapeDataString(query);
-            var url = $"https://api.twitter.com/2/tweets/search/recent?query={encodedQuery}&max_results={Math.Min(maxResults, 100)}&tweet.fields=created_at,author_id,public_metrics,context_annotations&expansions=author_id&user.fields=username,name,verified";
+            var url = $"https://api.twitter.com/2/tweets/search/recent?query={encodedQuery}&max_results={Math.Max(10, Math.Min(maxResults, 100))}&tweet.fields=created_at,author_id,public_metrics,context_annotations&expansions=author_id&user.fields=username,name,verified";
 
             var response = await _httpClient.GetAsync(url);
 
