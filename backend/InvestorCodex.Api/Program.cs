@@ -15,10 +15,13 @@ builder.Services.Configure<ApolloSettings>(
     builder.Configuration.GetSection(ApolloSettings.SectionName));
 builder.Services.Configure<TwitterAPISettings>(
     builder.Configuration.GetSection(TwitterAPISettings.SectionName));
+builder.Services.Configure<ContextFeedSettings>(
+    builder.Configuration.GetSection(ContextFeedSettings.SectionName));
 
 // Add HTTP clients for external services
 builder.Services.AddHttpClient<IApolloService, ApolloService>();
 builder.Services.AddHttpClient<ITwitterService, TwitterService>();
+builder.Services.AddHttpClient<IContextFeedService, ContextFeedService>();
 
 // Add repository services
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
@@ -29,6 +32,7 @@ builder.Services.AddScoped<ISignalRepository, SignalRepository>();
 // Add external API services
 builder.Services.AddScoped<IApolloService, ApolloService>();
 builder.Services.AddScoped<ITwitterService, TwitterService>();
+builder.Services.AddScoped<IContextFeedService, ContextFeedService>();
 
 // Add services to the container
 builder.Services.AddControllers();

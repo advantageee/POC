@@ -1,0 +1,36 @@
+{
+  "vc-latest": {
+    "id": "vc-latest",
+    "title": "Latest VC News",
+    "timestamp": "2024-06-04T12:00:00Z",
+    "entries": [
+      {
+        "id": "1",
+        "headline": "FinTechCo secures $20M Series B",
+        "summary": "FinTechCo raises new funding to expand operations.",
+        "link": "https://technews.com/fintech-series-b",
+        "publishedAt": "2024-06-04T10:00:00Z",
+        "source": "TechNews",
+        "topics": ["funding", "fintech"],
+        "confidence": 0.9
+      }
+    ]
+  },
+  "investor-weekly": {
+    "id": "investor-weekly",
+    "title": "Weekly Investor Briefs",
+    "timestamp": "2024-06-03T08:00:00Z",
+    "entries": [
+      {
+        "id": "2",
+        "headline": "AIHealth raises $50M for clinical trials platform",
+        "summary": "AIHealth's latest round led by Health Ventures.",
+        "link": "https://healthnews.com/aihealth",
+        "publishedAt": "2024-06-02T07:00:00Z",
+        "source": "HealthNews",
+        "topics": ["healthcare", "ai", "funding"],
+        "confidence": 0.85
+      }
+    ]
+  }
+}

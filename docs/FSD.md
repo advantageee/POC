@@ -33,6 +33,7 @@ Investor Codex is a full-stack, AI-powered investment intelligence platform aimi
 * Apollo.io
 * Public filings (SEC, SEDAR+, CIRO)
 * Crunchbase, YahooFinance, GNews, TechCrunch (via MCP)
+* Twitter API for additional signal monitoring
 * Internal annotations and manual enrichment
 
 ---
@@ -62,6 +63,7 @@ Investor Codex is a full-stack, AI-powered investment intelligence platform aimi
 ### 4.4 Signal Detection & Alerting
 
 * Alerts extracted via NLP from filings and news
+* TwitterService polls recent tweets for funding and acquisition chatter
 * Smart categorization: hiring, leadership change, risk flags
 * Alert scoring (0-1 confidence)
 * Displayed in `/alerts` dashboard
@@ -128,6 +130,7 @@ Investor Codex is a full-stack, AI-powered investment intelligence platform aimi
 
 * `GET /context?id=vc-latest`
 * `GET /context?id=investor-weekly`
+  * Returns an `MCPContext` JSON payload retrieved from the configured MCP feed (with a local sample fallback)
 
 ---
 
@@ -147,8 +150,8 @@ Investor Codex is a full-stack, AI-powered investment intelligence platform aimi
 ### AppSettings (web.config / appsettings.json)
 
 ```xml
-<add key="VCContextFeedUrl" value="https://mcp.investorcodex.ai/context?id=vc-latest" />
-<add key="InvestorBriefsFeedUrl" value="https://mcp.investorcodex.ai/context?id=investor-weekly" />
+<add key="ContextFeeds:vc-latest" value="https://mcp.investorcodex.ai/context?id=vc-latest" />
+<add key="ContextFeeds:investor-weekly" value="https://mcp.investorcodex.ai/context?id=investor-weekly" />
 <add key="ApolloApiKey" value="live_apollo_api_key_goes_here" />
 <add key="OpenAI__Endpoint" value="https://your-openai-instance.openai.azure.com/" />
 <add key="OpenAI__Key" value="live_openai_api_key_goes_here" />
@@ -158,6 +161,9 @@ Investor Codex is a full-stack, AI-powered investment intelligence platform aimi
 <add key="VectorSearchIndex" value="investor-index" />
 <add key="VectorSearchKey" value="live_vector_search_key_here" />
 <add key="DatabaseConnection" value="Host=localhost;Port=5432;Database=InvestorCodex;Username=postgres;Password=your_password" />
+<add key="TwitterApiKey" value="your-twitter-api-key" />
+<add key="TwitterApiSecret" value="your-twitter-api-secret" />
+<add key="TwitterBearerToken" value="your-twitter-bearer" />
 ```
 
 ---
