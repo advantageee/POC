@@ -239,3 +239,8 @@ C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\obj\Debug\
 C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\obj\Debug\net8.0\InvestorCodex.Api.dll
 C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\obj\Debug\net8.0\refint\InvestorCodex.Api.dll
 C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\obj\Debug\net8.0\InvestorCodex.Api.pdb
+C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\bin\Debug\net8.0\InvestorCodex.Api.deps.json
+C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\bin\Debug\net8.0\InvestorCodex.Api.runtimeconfig.json
+C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\bin\Debug\net8.0\InvestorCodex.Api.pdb
+C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\obj\Debug\net8.0\InvestorCodex.Api.genruntimeconfig.cache
+C:\Users\puref\source\repos\advantageee\POC\backend\InvestorCodex.Api\obj\Debug\net8.0\ref\InvestorCodex.Api.dll

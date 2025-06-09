@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("InvestorCodex.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac1c9a66caa23da03e8753f88bec56f36abf337f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8b3bef87ab3aa582603459aee50a39489abf9a2f")]
 [assembly: System.Reflection.AssemblyProductAttribute("InvestorCodex.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("InvestorCodex.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
