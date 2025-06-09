@@ -96,6 +96,8 @@ export interface ExportRequest {
 
 export interface ExportJob {
   id: string;
+  type?: 'companies' | 'signals';
+  format?: 'csv' | 'pdf';
   status: 'pending' | 'processing' | 'completed' | 'failed';
   downloadUrl?: string;
   createdAt: Date;

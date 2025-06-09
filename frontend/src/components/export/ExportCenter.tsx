@@ -38,11 +38,12 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
     investments: true,
     signals: true,
   });
-  const [isCreating, setIsCreating] = useState(false);
-  // Mock data
+  const [isCreating, setIsCreating] = useState(false);  // Mock data
   const mockJobs: ExportJob[] = jobs.length > 0 ? jobs : [
     {
       id: '1',
+      type: 'companies',
+      format: 'pdf',
       status: 'completed',
       downloadUrl: 'https://storage.azure.com/exports/company-report-2024-06-04.pdf',
       createdAt: new Date('2024-06-04T10:30:00Z'),
@@ -50,17 +51,23 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
     },
     {
       id: '2',
+      type: 'companies',
+      format: 'csv',
       status: 'processing',
       createdAt: new Date('2024-06-04T09:45:00Z'),
     },
     {
       id: '3',
+      type: 'signals',
+      format: 'pdf',
       status: 'failed',
       createdAt: new Date('2024-06-03T15:20:00Z'),
       error: 'Template rendering failed',
     },
     {
       id: '4',
+      type: 'companies',
+      format: 'csv',
       status: 'completed',
       downloadUrl: 'https://storage.azure.com/exports/companies-data-2024-06-03.csv',
       createdAt: new Date('2024-06-03T11:15:00Z'),
@@ -336,11 +343,14 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
                 </TableHeader>
                 <TableBody>
                   {mockJobs.map((job) => (
-                    <TableRow key={job.id}>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {job.type.toUpperCase()}
-                        </Badge>
+                    <TableRow key={job.id}>                      <TableCell>                        <div className="flex flex-col space-y-1">
+                          <Badge variant="secondary">
+                            {job.type?.toUpperCase() || 'UNKNOWN'}
+                          </Badge>
+                          <Badge variant="default">
+                            {job.format?.toUpperCase() || 'UNKNOWN'}
+                          </Badge>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
