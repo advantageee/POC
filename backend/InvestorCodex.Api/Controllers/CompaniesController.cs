@@ -126,4 +126,51 @@ public class CompaniesController : ControllerBase
             return StatusCode(500, $"An error occurred while deleting company: {ex.Message}");
         }
     }
+
+    [HttpPost("sync-apollo")]
+    public async Task<ActionResult> SyncWithApollo([FromQuery] int maxPages = 5)
+    {
+        try
+        {
+            _logger.LogInformation("Starting Apollo sync with maxPages: {MaxPages}", maxPages);
+            var result = await _apolloService.SyncCompaniesWithDatabaseAsync(maxPages);
+            
+            if (result)
+            {
+                return Ok(new { message = "Apollo sync completed successfully", maxPages });
+            }
+            else
+            {
+                return Ok(new { message = "Apollo sync completed but no new data was found", maxPages });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during Apollo sync");
+            return StatusCode(500, new { error = "Apollo sync failed", message = ex.Message });
+        }
+    }
+
+    [HttpPost("load-all-apollo")]
+    public async Task<ActionResult> LoadAllFromApollo()
+    {
+        try
+        {
+            _logger.LogInformation("Starting full Apollo data load");
+            var companiesLoaded = await _apolloService.LoadAllCompaniesFromApolloAsync();
+            var contactsLoaded = await _apolloService.LoadAllContactsFromApolloAsync();
+            
+            return Ok(new { 
+                message = "Apollo bulk load completed", 
+                companiesLoaded, 
+                contactsLoaded,
+                total = companiesLoaded + contactsLoaded
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during Apollo bulk load");
+            return StatusCode(500, new { error = "Apollo bulk load failed", message = ex.Message });
+        }
+    }
 }

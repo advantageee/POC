@@ -11,6 +11,7 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
   Squares2X2Icon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Alerts', href: '/alerts', icon: ExclamationTriangleIcon },
   { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
   { name: 'Export', href: '/exports', icon: DocumentArrowDownIcon },
+  { name: 'Admin', href: '/admin', icon: Cog6ToothIcon },
 ];
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
