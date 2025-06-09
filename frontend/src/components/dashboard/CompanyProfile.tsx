@@ -57,21 +57,16 @@ const fetchCompanyData = (id: string) => {
       summary: 'Experienced technology executive with 15+ years in enterprise software.'
     }
   ];
-
   const mockInvestments: Investment[] = [
     {
       id: 'i1',
       companyId: id,
-      company: `Company ${id}`,
-      filingType: 'Series C',
+      round: 'Series C',
       filingDate: new Date('2023-06-15'),
       source: 'SEDAR',
-      url: 'https://sedar.com/filing-123',
-      summary: 'Series C funding round to accelerate product development and market expansion.',
       investmentScore: 85,
       amount: 50000000,
-      currency: 'USD',
-      round: 'Series C'
+      currency: 'USD'
     }
   ];
 
@@ -136,35 +131,26 @@ export function CompanyProfile({ companyId }: CompanyProfileProps) {
       summary: 'Former Google engineer, specialist in AI and machine learning.',
     },
   ];
-
   const mockInvestments: Investment[] = investments.length > 0 ? investments : [
     {
       id: '1',
       companyId: company.id,
-      company: company.name,
-      filingType: 'Series B',
+      round: 'Series B',
       filingDate: new Date('2024-03-15'),
       source: 'SEC',
-      url: 'https://sec.gov/filing/123456',
-      summary: 'Raised $25M Series B led by Acme Ventures',
       investmentScore: 85,
       amount: 25000000,
       currency: 'USD',
-      round: 'Series B',
     },
     {
       id: '2',
       companyId: company.id,
-      company: company.name,
-      filingType: 'Series A',
+      round: 'Series A',
       filingDate: new Date('2023-08-10'),
       source: 'SEDAR',
-      url: 'https://sedar.ca/filing/789012',
-      summary: 'Raised $8M Series A from multiple investors',
       investmentScore: 78,
       amount: 8000000,
       currency: 'USD',
-      round: 'Series A',
     },
   ];
 

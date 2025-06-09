@@ -30,7 +30,8 @@ interface ExportCenterProps {
 }
 
 export function ExportCenter({ jobs = [], loading = false, onCreateExport }: ExportCenterProps) {
-  const [exportType, setExportType] = useState<'pdf' | 'csv'>('pdf');
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'csv'>('pdf');
+  const [dataType, setDataType] = useState<'companies' | 'signals'>('companies');
   const [filters, setFilters] = useState<CompanyFilters>({});
   const [includeOptions, setIncludeOptions] = useState({
     contacts: true,
@@ -38,13 +39,11 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
     signals: true,
   });
   const [isCreating, setIsCreating] = useState(false);
-
   // Mock data
   const mockJobs: ExportJob[] = jobs.length > 0 ? jobs : [
     {
       id: '1',
       status: 'completed',
-      type: 'pdf',
       downloadUrl: 'https://storage.azure.com/exports/company-report-2024-06-04.pdf',
       createdAt: new Date('2024-06-04T10:30:00Z'),
       completedAt: new Date('2024-06-04T10:35:00Z'),
@@ -52,20 +51,17 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
     {
       id: '2',
       status: 'processing',
-      type: 'csv',
       createdAt: new Date('2024-06-04T09:45:00Z'),
     },
     {
       id: '3',
       status: 'failed',
-      type: 'pdf',
       createdAt: new Date('2024-06-03T15:20:00Z'),
       error: 'Template rendering failed',
     },
     {
       id: '4',
       status: 'completed',
-      type: 'csv',
       downloadUrl: 'https://storage.azure.com/exports/companies-data-2024-06-03.csv',
       createdAt: new Date('2024-06-03T11:15:00Z'),
       completedAt: new Date('2024-06-03T11:18:00Z'),
@@ -73,16 +69,12 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
   ];
 
   const handleCreateExport = async () => {
-    if (!onCreateExport) return;
-
-    setIsCreating(true);
+    if (!onCreateExport) return;    setIsCreating(true);
     try {
       const request: ExportRequest = {
-        type: exportType,
+        format: exportFormat,
+        type: dataType,
         filters,
-        includeContacts: includeOptions.contacts,
-        includeInvestments: includeOptions.investments,
-        includeSignals: includeOptions.signals,
       };
       
       await onCreateExport(request);
@@ -144,17 +136,16 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
               Generate PDF reports or CSV data exports
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Export Type */}
+          <CardContent className="space-y-6">            {/* Export Format */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Export Type
+                Export Format
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => setExportType('pdf')}
+                  onClick={() => setExportFormat('pdf')}
                   className={`p-4 rounded-lg border-2 text-left transition-colors ${
-                    exportType === 'pdf'
+                    exportFormat === 'pdf'
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -166,9 +157,9 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
                   </div>
                 </button>
                 <button
-                  onClick={() => setExportType('csv')}
+                  onClick={() => setExportFormat('csv')}
                   className={`p-4 rounded-lg border-2 text-left transition-colors ${
-                    exportType === 'csv'
+                    exportFormat === 'csv'
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -177,6 +168,41 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
                   <div className="font-medium">CSV Data</div>
                   <div className="text-sm text-gray-500">
                     Raw data for analysis tools
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Data Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Data Type
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setDataType('companies')}
+                  className={`p-4 rounded-lg border-2 text-left transition-colors ${
+                    dataType === 'companies'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="font-medium">Companies</div>
+                  <div className="text-sm text-gray-500">
+                    Company profiles and details
+                  </div>
+                </button>
+                <button
+                  onClick={() => setDataType('signals')}
+                  className={`p-4 rounded-lg border-2 text-left transition-colors ${
+                    dataType === 'signals'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="font-medium">Signals</div>
+                  <div className="text-sm text-gray-500">
+                    Investment signals and alerts
                   </div>
                 </button>
               </div>
@@ -271,11 +297,10 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
             <Button
               onClick={handleCreateExport}
               loading={isCreating}
-              className="w-full"
-              disabled={isCreating}
+              className="w-full"            disabled={isCreating}
             >
               <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-              Create {exportType.toUpperCase()} Export
+              Create {exportFormat.toUpperCase()} Export
             </Button>
           </CardContent>
         </Card>

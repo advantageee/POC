@@ -322,11 +322,10 @@ export default function AdminPage() {
                   {/* Smart Sync */}
                   <div className="space-y-3">
                     <h4 className="font-medium">Smart Sync</h4>
-                    <p className="text-sm text-gray-600">Intelligently sync with database awareness</p>
-                    <Button 
+                    <p className="text-sm text-gray-600">Intelligently sync with database awareness</p>                    <Button 
                       onClick={triggerSync} 
                       disabled={syncLoading}
-                      variant="default"
+                      variant="primary"
                       className="w-full"
                     >
                       {syncLoading ? (

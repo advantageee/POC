@@ -130,3 +130,13 @@ export function getSignalTypeIcon(type: string): string {
       return '📊';
   }
 }
+
+/**
+ * Generate export filename with timestamp
+ */
+export function generateExportFilename(prefix: string, extension: string = 'csv'): string {
+  const now = new Date();
+  const timestamp = now.toISOString().split('T')[0].replace(/-/g, '');
+  const timeComponent = now.toTimeString().split(' ')[0].replace(/:/g, '');
+  return `${prefix}_${timestamp}_${timeComponent}.${extension}`;
+}

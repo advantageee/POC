@@ -76,13 +76,12 @@ export function AlertsTimeline({ signals = [], loading = false }: AlertsTimeline
     {
       id: '4',
       companyId: '3',
-      company: { id: '3', name: 'GreenEnergy Solutions', domain: 'greenenergy.com' },
-      type: 'risk',
+      company: { id: '3', name: 'GreenEnergy Solutions', domain: 'greenenergy.com' },      type: 'risk',
       title: 'Regulatory Investigation Announced',
       description: 'EPA announced investigation into GreenEnergy\'s manufacturing processes following environmental compliance concerns.',
       source: 'Environmental Reporter',
       url: 'https://envreporter.com/investigation',
-      severity: 'critical',
+      severity: 'high',
       tags: ['regulatory', 'environmental', 'investigation'],
       summary: 'Regulatory risk could impact operations and future growth plans.',
       detectedAt: new Date('2024-05-31T16:45:00Z'),
@@ -279,10 +278,9 @@ export function AlertsTimeline({ signals = [], loading = false }: AlertsTimeline
                               </p>
                             </div>
                           )}
-                          
-                          <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between">
                             <div className="flex flex-wrap gap-1">
-                              {signal.tags.map((tag) => (
+                              {signal.tags?.map((tag) => (
                                 <Badge key={tag} variant="secondary" className="text-xs">
                                   {tag}
                                 </Badge>
