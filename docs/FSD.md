@@ -1,93 +1,252 @@
-# Investor Codex Functional Specification (v1.0)
+# Functional Specification Document (FSD): Investor Codex Platform
 
-This document outlines the key features and components of the Investor Codex platform. It mirrors the full specification provided in the project planning stages and acts as a reference for contributors.
+## 1. Overview
+
+Investor Codex is a full-stack, AI-powered investment intelligence platform aiming for full feature parity with PitchBook. It aggregates, enriches, and analyzes structured and unstructured data on companies, investors, and funding events. It now includes MCP-based context integration for real-time VC news and smart prompt grounding.
 
 ---
 
-## Tech Stack Overview
+## 2. Goals
 
-- **Frontend**: React, TypeScript, Tailwind (Next.js)
-- **Backend**: .NET 8 / ASP.NET Core Web API
-- **Database**: PostgreSQL, CosmosDB
-- **AI**: Azure OpenAI GPT-4o and embeddings
-- **Vector Search**: Azure Cognitive Search
-- **Auth**: Azure AD B2C
+* Match PitchBook 1:1 in core capabilities
+* Enable scalable AI-powered enrichment and summarization
+* Provide investor intelligence, deal tracking, alerts, and analytics
+* Integrate real-time news and contextual intelligence via MCP
+* Support RAG-ready embedding and prompt APIs
 
-## Core Modules
+---
 
-1. **Company Intelligence**
-   - Pull company data from Apollo.io and enrich it using Azure OpenAI.
-   - Stored fields include name, industry, location and AI-generated summary, tags and risk flags.
-2. **Contact Intelligence**
-   - Similar enrichment for key contacts with persona classification.
-3. **Investment History**
-   - ETL jobs aggregate funding rounds and public filings from multiple sources.
-4. **Signal Tracking**
-   - Tracks real-time signals such as funding, hiring or risk events.
-5. **Similar Company Search**
-   - Embedding based search using Azure Cognitive Search.
-6. **Dashboard Frontend**
-   - Next.js powered user interface to browse companies, alerts and export data.
-
-Refer to the original functional specification for detailed schema and milestone breakdown.
-
-## Worker Services
-
-- **Apollo Sync Service** – A .NET 8 worker that runs daily to fetch companies and contacts from Apollo's `/companies/search` and `/people/search` endpoints. Records are upserted into PostgreSQL and any failures are logged to a CosmosDB `sync_failures` container.
-- **Investment Filing ETL** – A Python pipeline that parses SEC, SEDAR+ and CIRO/IROC filings using BeautifulSoup, PyMuPDF and pdfminer. Parsed filings are stored in an `investments` table and enriched via the `/api/enrich/investment-summary` endpoint.
-
-## AI Enrichment Engine
-
-- **Service**: Azure Function App
-- **Models**: GPT-4o and `text-embedding-3-large`
-- **Endpoints**
-  - `POST /api/enrich/company`
-  - `POST /api/enrich/investment-summary`
-  - `POST /api/analyze/signal`
-- **Input**: Raw Apollo JSON or parsed signal text
-- **Output**
-  - Company enrichment stored in `companies.summary`, `investment_score`, `tags[]` and `risk_flags[]`
-  - Signal analysis stored in `signals.tags`, `signals.severity` and `signals.summary`
-- **Queue Integration**: Uses Azure Storage Queue or Service Bus to support asynchronous processing
+## Table of Contents
+1. [Overview](#1-overview)
+2. [Goals](#2-goals)
+3. [System-Architecture](#3-system-architecture)
+4. [Functional-Components](#4-functional-components)
+5. [Data-Model](#5-data-model)
+6. [API-Endpoints](#6-api-endpoints)
+7. [Frontend-Structure-nextjs](#7-frontend-structure-nextjs)
+8. [Integration-Config](#8-integration-config)
+9. [Prompt-Template-LLM](#9-prompt-template-llm)
+10. [Schedule--Refresh](#10-schedule--refresh)
+11. [Roadmap-PitchBook-Feature-Gaps](#11-roadmap-pitchbook-feature-gaps)
+12. [Security--Roles](#12-security--roles)
+13. [Testing--Monitoring](#13-testing--monitoring)
+14. [Summary](#14-summary)
+15. [Roadmap--Milestones-Delivery-Schedule](#roadmap--milestones-delivery-schedule)
 
 
-## Embedding + Similarity Service
+## 3. System Architecture
 
-This component provides vector storage and similarity search capabilities:
+### 3.1 Core Modules
 
-- **Model**: Azure OpenAI `text-embedding-3-large`
-- **Storage**: Azure Cognitive Search index `company-embeddings`
-- **Workflow**
-  - `POST /api/embedding/vectorize` – Stores an embedding vector with metadata
-  - `GET /api/embedding/search?q=...` – Performs a vector similarity search with optional filters
+* **InvestorCodex.Api (.NET 8)**: REST API
+* **InvestorCodex.SyncService**: Apollo.io and partner data sync
+* **InvestorCodex.EmbeddingService (Python/FastAPI)**: Vector search and embedding
+* **InvestorCodex.EnrichmentFunction (.NET)**: AI enrichment handlers
+* **InvestmentFilingETL (Python)**: Filing data ingestion (SEC, SEDAR+, CIRO)
+* **Frontend (Next.js + TS + Tailwind)**: UI with search, dashboard, exports
+* **MCP News Integration**: Real-time VC news via /context feeds
 
-The service is implemented as a FastAPI app in `backend/InvestorCodex.EmbeddingService`.
+### 3.2 Data Sources
 
-## Dashboard Web App
+* Apollo.io
+* Public filings (SEC, SEDAR+, CIRO)
+* Crunchbase, YahooFinance, GNews, TechCrunch (via MCP)
+* Internal annotations and manual enrichment
 
-The frontend is built with Next.js and Tailwind CSS. It consumes the backend APIs to present investment insights.
+---
 
-### Routing Views
+## 4. Functional Components
 
-- `/companies` – Table view with pagination and filters.
-- `/companies/:id` – Tabbed profile showing **Signals**, **Contacts**, and **Investments**.
-- `/alerts` – Timeline view of signals sorted by AI-assigned severity.
-- `/similar/:id` – Displays embedding based similar company results.
-- `/export` – Allows downloading PDF or CSV reports.
-- `/api-config` – Admin page for managing backend API endpoints.
+### 4.1 Company Intelligence
 
-The **API Configuration** view lets administrators set base URLs or credentials
-for backend services (API, embedding, and enrichment). Settings are stored
-securely and used by the dashboard when making requests.
+* CRUD + enrichment via `CompaniesController`
+* AI-based enrichment: description, traction, risk factors
+* MCP card injection with recent VC mentions
+* Vector similarity via `EmbeddingController`
 
-### User Roles
+### 4.2 Contact Intelligence
 
-Azure AD B2C provides authentication with three roles:
+* Contact ingestion via ApolloSyncWorker
+* Persona tagging using LLMs
+* Relationship mapping (future)
 
-- **Viewer** – Read-only access to company data.
-- **Analyst** – Can trigger exports and manage alerts.
-- **Admin** – Full access including user management.
+### 4.3 Investment Deal Tracking
 
-## Export & Reporting Engine
+* Ingested from filings, Apollo
+* `InvestmentsController` manages endpoints
+* Basic metadata (round, date, investors, amount)
+* Term sheet ingestion roadmap (manual+DocuSign parsing)
 
-When a user clicks the export button, an asynchronous job is placed on an Azure Queue. The job renders HTML templates to PDF via Puppeteer (or DinkToPDF) and generates CSV files directly from PostgreSQL. Files are stored temporarily in Azure Blob Storage and served through time-limited signed URLs.
+### 4.4 Signal Detection & Alerting
+
+* Alerts extracted via NLP from filings and news
+* Smart categorization: hiring, leadership change, risk flags
+* Alert scoring (0-1 confidence)
+* Displayed in `/alerts` dashboard
+
+### 4.5 News Integration (MCP Protocol)
+
+* Fetchers ingest external feeds (Crunchbase, GNews, YahooFinance)
+* Normalized via `MCP Context Assembler`
+* Exposed via REST `/context?id=vc-latest`
+* Displayed as cards in NLWeb UI
+* Injected into LLM prompt template
+
+### 4.6 Search & Export
+
+* Vector + keyword filtering via `/search`
+* Advanced filters planned: sector, geo, stage, score
+* `ExportController` generates CSV / PDF exports
+
+---
+
+## 5. Data Model
+
+### 5.1 Company
+
+* id, name, industry, description
+* funding history, signals[], enrichment
+* tags[], vector[]
+
+### 5.2 Contact
+
+* id, name, company_id, title
+* enrichment, persona_label
+
+### 5.3 Investment
+
+* id, company_id, round, date, investors[], terms (future)
+
+### 5.4 Signal
+
+* id, type, source, summary, confidence, company_id
+
+### 5.5 MCPContext
+
+* id, title, timestamp, entries[]
+
+### 5.6 MCPEntry
+
+* id, headline, summary, link, publishedAt, source, topics[], confidence
+
+---
+
+## 6. API Endpoints
+
+### Core APIs
+
+* `GET /api/companies`
+* `GET /api/contacts`
+* `GET /api/investments`
+* `GET /api/signals`
+* `POST /api/embedding/query`
+* `GET /api/exports`
+
+### MCP APIs
+
+* `GET /context?id=vc-latest`
+* `GET /context?id=investor-weekly`
+
+---
+
+## 7. Frontend Structure (Next.js)
+
+* `app/companies/page.tsx` – company list
+* `app/company/[id]/page.tsx` – company detail
+* `app/dashboard/page.tsx` – signals + alerts overview
+* `app/exports/page.tsx` – download center
+* `src/components/` – reusable components (Table, Cards, Auth)
+* `src/lib/api/` – centralized fetch wrappers
+
+---
+
+## 8. Integration Config
+
+### AppSettings (web.config / appsettings.json)
+
+```xml
+<add key="VCContextFeedUrl" value="https://mcp.investorcodex.ai/context?id=vc-latest" />
+<add key="InvestorBriefsFeedUrl" value="https://mcp.investorcodex.ai/context?id=investor-weekly" />
+<add key="ApolloApiKey" value="live_apollo_api_key_goes_here" />
+<add key="OpenAI__Endpoint" value="https://your-openai-instance.openai.azure.com/" />
+<add key="OpenAI__Key" value="live_openai_api_key_goes_here" />
+<add key="OpenAI__EmbeddingModel" value="text-embedding-3-large" />
+<add key="OpenAI__ChatModel" value="gpt-4o" />
+<add key="VectorSearchEndpoint" value="https://your-search-service.search.windows.net" />
+<add key="VectorSearchIndex" value="investor-index" />
+<add key="VectorSearchKey" value="live_vector_search_key_here" />
+<add key="DatabaseConnection" value="Host=localhost;Port=5432;Database=InvestorCodex;Username=postgres;Password=your_password" />
+```
+
+---
+
+## 9. Prompt Template (LLM)
+
+```kotlin
+You are a venture analyst AI. Use the following recent VC news entries to assist users:
+{{#each context.entries}}
+- {{this.headline}} ({{this.source}}): {{this.summary}}
+{{/each}}
+```
+
+---
+
+## 10. Schedule & Refresh
+
+| Process                | Frequency   |
+| ---------------------- | ----------- |
+| Feed Polling           | Every 15min |
+| MCP Context Reassembly | Every 30min |
+| NLWeb UI Refresh       | Hourly      |
+| Vector Re-Embedding    | Daily       |
+
+---
+
+## 11. Roadmap (PitchBook Feature Gaps)
+
+* [ ] Fund profiles & investor database
+* [ ] Term sheet + cap table UI
+* [ ] Advanced deal comparables engine
+* [ ] CRM sync and API exports
+* [ ] Smart alerts + watchlists
+* [ ] Semantic auto-tagging in MCP
+* [ ] Dashboard widgets (round activity, deal flow)
+
+---
+
+## 12. Security & Roles
+
+* Viewer, Analyst, Admin (RBAC)
+* Session management via custom `AuthProvider.tsx`
+* Future: Azure AD B2C integration for SSO
+
+---
+
+## 13. Testing & Monitoring
+
+* `INTEGRATION_TEST_RESULTS.md` documents success cases
+* `test-api.js`, `test-apis.ps1`: manual test utilities
+* Health endpoints `/api/health`
+* Future: integrate App Insights, Datadog or Azure Monitor
+
+---
+
+## 14. Summary
+
+This FSD describes a production-grade PitchBook alternative grounded in AI, modern search, and scalable enrichment workflows. It maintains the original AdvantageEE POC structure, fully integrating the MCP-based VC feed without breaking compatibility and defines a clear milestone plan for feature-complete delivery.
+
+---
+
+## Roadmap & Milestones (Delivery Schedule)
+
+| Date         | Milestone Description                                |
+| ------------ | ---------------------------------------------------- |
+| Today 2PM    | ✅ Confirm FSD scope, architecture, and data sources  |
+| Today 4PM    | ✅ Finalize backend service routes + appsettings      |
+| Today 6PM    | ✅ Implement API stubs and scaffolding                |
+| Tonight 9PM  | ✅ Connect embedding + vector search modules          |
+| Tonight 11PM | ✅ SyncService & ETL for Apollo and filings           |
+| Tomorrow 2AM | ✅ Implement MCP news fetch and /context feed         |
+| Tomorrow 4AM | ✅ Frontend integration + component rendering (cards) |
+| Tomorrow 6AM | ✅ Prompt injection, export center, testing + polish  |
+| Tomorrow 8AM | 🟢 GO/NO-GO deployment checkpoint                    |
