@@ -56,9 +56,7 @@ export default function SearchPage() {
         ...(filters.industry && { industry: filters.industry }),
         ...(filters.fundingStage && { fundingStage: filters.fundingStage }),
         pageSize: '20'
-      });
-
-      const response = await fetch(`http://localhost:5000/api/companies?${searchParams}`);
+      });      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/companies?${searchParams}`);
       const data = await response.json();
       setCompanies(data.data || []);
     } catch (error) {
@@ -88,8 +86,7 @@ export default function SearchPage() {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
-      try {
-        const response = await fetch('http://localhost:5000/api/companies?pageSize=20');
+      try {        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/companies?pageSize=20`);
         const data = await response.json();
         setCompanies(data.data || []);
       } catch (error) {
@@ -315,12 +312,13 @@ export default function SearchPage() {
                           ))}
                         </div>
                       )}
-                    </div>
-
-                    <div className="mt-4 lg:mt-0 lg:ml-6 flex-shrink-0">
-                      <button className="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    </div>                    <div className="mt-4 lg:mt-0 lg:ml-6 flex-shrink-0">
+                      <a 
+                        href={`/company/${company.id}`}
+                        className="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block text-center"
+                      >
                         View Details
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </div>

@@ -119,8 +119,11 @@ async def vectorize(req: VectorizeRequest) -> Dict[str, Any]:
         # Generate embedding
         vector = await generate_embedding(req.text)
         
+        # Use ID from metadata if provided, otherwise generate random ID
+        doc_id = req.metadata.get("id", os.urandom(8).hex())
+        
         document = {
-            "id": os.urandom(8).hex(),
+            "id": doc_id,
             "vector": vector,
             "text": req.text,
             **req.metadata,
