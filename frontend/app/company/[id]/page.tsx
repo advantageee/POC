@@ -3,11 +3,12 @@
 import { CompanyProfile } from '@/components/dashboard/CompanyProfile';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { notFound } from 'next/navigation';
+import { use } from 'react';
 
-export default async function CompanyPage({ params }: { params: Promise<{ id: string }> }) {
+export default function CompanyPage({ params }: { params: Promise<{ id: string }> }) {
   // In a real app, you'd fetch company data here
   // For now, we'll pass the ID to the component
-  const { id } = await params;
+  const { id } = use(params);
   
   if (!id) {
     notFound();

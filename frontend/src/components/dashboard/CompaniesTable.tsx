@@ -56,35 +56,10 @@ export function CompaniesTable({ className }: CompaniesTableProps) {
         });
         
         console.log('✅ Companies API response:', response);
-        setCompanies(response);
-      } catch (err) {
+        setCompanies(response);      } catch (err) {
         console.error('❌ Failed to fetch companies from API:', err);
-        setError('Failed to load companies from API, using fallback data');
-        
-        // Fallback to mock data for demo
-        console.log('📋 Using fallback mock data');
-        setCompanies({
-          data: [
-            {
-              id: '1',
-              name: 'TechCorp Inc. (Fallback)',
-              domain: 'techcorp.com',
-              industry: 'Software',
-              headcount: 250,
-              fundingStage: 'Series B',
-              summary: 'AI-powered enterprise software solutions (fallback data)',
-              investmentScore: 85,
-              tags: ['AI', 'Enterprise', 'SaaS'],
-              riskFlags: [],
-              createdAt: new Date('2024-01-15'),
-              updatedAt: new Date('2024-06-01'),
-            },
-          ],
-          page: 1,
-          pageSize: 10,
-          total: 1,
-          totalPages: 1,
-        });
+        setError(err instanceof Error ? err.message : 'Failed to load companies');
+        setCompanies(null);
       } finally {
         setLoading(false);
       }
@@ -106,51 +81,68 @@ export function CompaniesTable({ className }: CompaniesTableProps) {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
   const getInvestmentScoreColor = (score?: number) => {
     if (!score) return 'text-gray-400';
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Companies</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading companies...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (error && !companies) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Companies</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center p-8">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const displayData = companies || {
-    data: [
-      {
-        id: '1',
-        name: 'TechCorp Inc.',
-        domain: 'techcorp.com',
-        industry: 'Software',
-        headcount: 250,
-        fundingStage: 'Series B',
-        summary: 'AI-powered enterprise software solutions',
-        investmentScore: 85,
-        tags: ['AI', 'Enterprise', 'SaaS'],
-        riskFlags: [],
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-06-01'),
-      },
-    ],
+    data: [],
     page: 1,
     pageSize: 10,
-    total: 1,
-    totalPages: 1,
+    total: 0,
+    totalPages: 0,
   };
 
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
       <Card>        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between">            <div className="flex items-center space-x-3">
               <CardTitle>Companies</CardTitle>
-              {error && (
-                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                  Using Fallback Data
-                </Badge>
-              )}
-              {!error && !loading && (
+              {!loading && companies && (
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  Live API Data
+                  Live API Data ({companies.total} total)
                 </Badge>
               )}
             </div>

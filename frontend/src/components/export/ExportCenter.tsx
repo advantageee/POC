@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatDate, formatRelativeTime, generateExportFilename } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -21,15 +21,14 @@ import {
   XCircleIcon,
   ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
+import { exportApi } from '@/lib/api';
 import type { ExportRequest, ExportJob, CompanyFilters } from '@/types';
 
 interface ExportCenterProps {
-  jobs?: ExportJob[];
-  loading?: boolean;
-  onCreateExport?: (request: ExportRequest) => void;
+  className?: string;
 }
 
-export function ExportCenter({ jobs = [], loading = false, onCreateExport }: ExportCenterProps) {
+export function ExportCenter({ className }: ExportCenterProps) {
   const [exportFormat, setExportFormat] = useState<'pdf' | 'csv'>('pdf');
   const [dataType, setDataType] = useState<'companies' | 'signals'>('companies');
   const [filters, setFilters] = useState<CompanyFilters>({});
@@ -38,45 +37,30 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
     investments: true,
     signals: true,
   });
-  const [isCreating, setIsCreating] = useState(false);  // Mock data
-  const mockJobs: ExportJob[] = jobs.length > 0 ? jobs : [
-    {
-      id: '1',
-      type: 'companies',
-      format: 'pdf',
-      status: 'completed',
-      downloadUrl: 'https://storage.azure.com/exports/company-report-2024-06-04.pdf',
-      createdAt: new Date('2024-06-04T10:30:00Z'),
-      completedAt: new Date('2024-06-04T10:35:00Z'),
-    },
-    {
-      id: '2',
-      type: 'companies',
-      format: 'csv',
-      status: 'processing',
-      createdAt: new Date('2024-06-04T09:45:00Z'),
-    },
-    {
-      id: '3',
-      type: 'signals',
-      format: 'pdf',
-      status: 'failed',
-      createdAt: new Date('2024-06-03T15:20:00Z'),
-      error: 'Template rendering failed',
-    },
-    {
-      id: '4',
-      type: 'companies',
-      format: 'csv',
-      status: 'completed',
-      downloadUrl: 'https://storage.azure.com/exports/companies-data-2024-06-03.csv',
-      createdAt: new Date('2024-06-03T11:15:00Z'),
-      completedAt: new Date('2024-06-03T11:18:00Z'),
-    },
-  ];
+  const [isCreating, setIsCreating] = useState(false);
+  const [jobs, setJobs] = useState<ExportJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  // Load export jobs
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        setLoading(true);
+        const data = await exportApi.getJobs();
+        setJobs(data);
+      } catch (err) {
+        console.error('Failed to load export jobs:', err);
+        setError('Failed to load export jobs');
+        setJobs([]); // Show empty list instead of mock data
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadJobs();  }, []);
 
   const handleCreateExport = async () => {
-    if (!onCreateExport) return;    setIsCreating(true);
+    setIsCreating(true);
     try {
       const request: ExportRequest = {
         format: exportFormat,
@@ -84,7 +68,8 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
         filters,
       };
       
-      await onCreateExport(request);
+      const newJob = await exportApi.createJob(request);
+      setJobs(prev => [newJob, ...prev]);
       
       // Reset form
       setFilters({});
@@ -93,6 +78,9 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
         investments: true,
         signals: true,
       });
+    } catch (err) {
+      console.error('Failed to create export:', err);
+      setError('Failed to create export job');
     } finally {
       setIsCreating(false);
     }
@@ -321,11 +309,10 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center p-8">
+            {loading ? (              <div className="flex items-center justify-center p-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
-            ) : mockJobs.length === 0 ? (
+            ) : jobs.length === 0 ? (
               <div className="text-center p-8">
                 <DocumentArrowDownIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No exports yet</h3>
@@ -342,7 +329,7 @@ export function ExportCenter({ jobs = [], loading = false, onCreateExport }: Exp
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockJobs.map((job) => (
+                  {jobs.map((job) => (
                     <TableRow key={job.id}>                      <TableCell>                        <div className="flex flex-col space-y-1">
                           <Badge variant="secondary">
                             {job.type?.toUpperCase() || 'UNKNOWN'}

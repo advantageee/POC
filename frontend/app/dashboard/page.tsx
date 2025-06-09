@@ -16,23 +16,67 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
-import { companiesApi } from '@/lib/api';
+import { companiesApi, signalsApi } from '@/lib/api';
+import { api } from '@/lib/api/client';
+
+interface DashboardStats {
+  totalCompanies: number;
+  totalContacts: number;
+  totalInvestments: number;
+  activeSignals: number;
+}
 
 export default function DashboardPage() {
   const [apiStatus, setApiStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [apiData, setApiData] = useState<any>(null);
   const [backendHealth, setBackendHealth] = useState<'loading' | 'success' | 'error'>('loading');
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [recentSignals, setRecentSignals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Test API connection
-    const testAPI = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await companiesApi.getAll({ page: 1, pageSize: 5 });
-        setApiData(response);
+        setLoading(true);
+
+        // Test API connection with companies
+        const companiesResponse = await companiesApi.getAll({ page: 1, pageSize: 5 });
+        setApiData(companiesResponse);
         setApiStatus('success');
+
+        // Fetch dashboard statistics
+        const [
+          companiesStatsResponse,
+          contactsResponse,
+          investmentsResponse,
+          signalsResponse
+        ] = await Promise.allSettled([
+          companiesApi.getAll({ page: 1, pageSize: 1 }), // Just to get total count
+          api.get('/api/contacts?pageSize=1'),
+          api.get('/api/investments?pageSize=1'),
+          signalsApi.getAll({ page: 1, pageSize: 10 })
+        ]);
+
+        // Extract stats from responses
+        const stats: DashboardStats = {
+          totalCompanies: companiesStatsResponse.status === 'fulfilled' ? companiesStatsResponse.value.total : 0,
+          totalContacts: contactsResponse.status === 'fulfilled' ? contactsResponse.value.total : 0,
+          totalInvestments: investmentsResponse.status === 'fulfilled' ? investmentsResponse.value.total : 0,
+          activeSignals: signalsResponse.status === 'fulfilled' ? signalsResponse.value.total : 0,
+        };
+
+        setDashboardStats(stats);
+
+        // Set recent signals
+        if (signalsResponse.status === 'fulfilled') {
+          setRecentSignals(signalsResponse.value.data || []);
+        }
+
       } catch (error) {
-        console.error('API test failed:', error);
+        console.error('Dashboard API test failed:', error);
         setApiStatus('error');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -50,71 +94,49 @@ export default function DashboardPage() {
       }
     };
 
-    testAPI();
-    testBackend();
-  }, []);
+    fetchDashboardData();
+    testBackend();  }, []);
 
-  const stats = [
+  // Generate stats from real data
+  const stats = dashboardStats ? [
     {
       title: 'Total Companies',
-      value: '1,247',
-      change: '+12%',
+      value: dashboardStats.totalCompanies.toLocaleString(),
+      change: '+12%', // This would need to be calculated from historical data
       changeType: 'positive' as const,
       icon: BuildingOfficeIcon,
     },
     {
       title: 'Active Contacts',
-      value: '3,891',
-      change: '+8%',
+      value: dashboardStats.totalContacts.toLocaleString(),
+      change: '+8%', // This would need to be calculated from historical data
       changeType: 'positive' as const,
       icon: UserGroupIcon,
     },
     {
-      title: 'Investment Volume',
-      value: '$2.4B',
-      change: '+23%',
+      title: 'Total Investments',
+      value: dashboardStats.totalInvestments.toLocaleString(),
+      change: '+23%', // This would need to be calculated from historical data
       changeType: 'positive' as const,
       icon: BanknotesIcon,
     },
     {
-      title: 'Active Alerts',
-      value: '67',
-      change: '-5%',
-      changeType: 'negative' as const,
+      title: 'Active Signals',
+      value: dashboardStats.activeSignals.toString(),
+      change: recentSignals.length > 0 ? 'New activity' : 'No new activity',
+      changeType: recentSignals.length > 0 ? 'positive' as const : 'neutral' as const,
       icon: ExclamationTriangleIcon,
     },
-  ];
-
-  const recentActivities = [
-    {
-      type: 'investment',
-      company: 'TechCorp Solutions',
-      description: 'Raised $50M Series B funding',
-      time: '2 hours ago',
-      severity: 'high' as const,
-    },
-    {
-      type: 'signal',
-      company: 'GreenTech Industries',
-      description: 'New executive hire - former Google VP',
-      time: '4 hours ago',
-      severity: 'medium' as const,
-    },
-    {
-      type: 'company',
-      company: 'BioMed Innovations',
-      description: 'Updated company profile and metrics',
-      time: '6 hours ago',
-      severity: 'low' as const,
-    },
-    {
-      type: 'investment',
-      company: 'FinTech Startup',
-      description: 'Seed round completed - $2M raised',
-      time: '1 day ago',
-      severity: 'medium' as const,
-    },
-  ];
+  ] : [];
+  // Transform recent signals into activities
+  const recentActivities = recentSignals.slice(0, 5).map(signal => ({
+    type: signal.type || 'signal',
+    company: signal.company?.name || 'Unknown Company',
+    description: signal.title || signal.description,    time: signal.detectedAt ? 
+          new Date(signal.detectedAt).toLocaleDateString() : 
+          'Recently',
+    severity: signal.severity || 'medium',
+  }));
 
   return (
     <ProtectedRoute>

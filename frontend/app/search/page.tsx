@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { companiesApi } from '@/lib/api';
+import type { Company } from '@/types';
 import { 
   MagnifyingGlassIcon, 
   FunnelIcon,
@@ -11,19 +13,6 @@ import {
   ChartBarIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
-
-interface Company {
-  id: string;
-  name: string;
-  domain: string;
-  industry: string;
-  location: string;
-  headcount: number;
-  fundingStage: string;
-  summary: string;
-  investmentScore: number;
-  tags: string[];
-}
 
 interface SearchFilters {
   industry: string;
@@ -45,20 +34,21 @@ export default function SearchPage() {
     minHeadcount: '',
     maxHeadcount: ''
   });
-
   const searchCompanies = async () => {
     if (!searchQuery.trim()) return;
     
     setLoading(true);
     try {
-      const searchParams = new URLSearchParams({
-        search: searchQuery,
-        ...(filters.industry && { industry: filters.industry }),
-        ...(filters.fundingStage && { fundingStage: filters.fundingStage }),
-        pageSize: '20'
-      });      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/companies?${searchParams}`);
-      const data = await response.json();
-      setCompanies(data.data || []);
+      const response = await companiesApi.getAll({
+        page: 1,
+        pageSize: 20,
+        filters: {
+          search: searchQuery,
+          ...(filters.industry && { industry: [filters.industry] }),
+          ...(filters.fundingStage && { fundingStage: [filters.fundingStage] }),
+        }
+      });
+      setCompanies(response.data || []);
     } catch (error) {
       console.error('Search failed:', error);
       setCompanies([]);
@@ -81,14 +71,16 @@ export default function SearchPage() {
       maxHeadcount: ''
     });
   };
-
   // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
-      try {        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/companies?pageSize=20`);
-        const data = await response.json();
-        setCompanies(data.data || []);
+      try {
+        const response = await companiesApi.getAll({
+          page: 1,
+          pageSize: 20,
+        });
+        setCompanies(response.data || []);
       } catch (error) {
         console.error('Failed to load companies:', error);
       } finally {
@@ -267,9 +259,8 @@ export default function SearchPage() {
                           <p className="text-sm text-blue-600 font-medium">
                             {company.domain}
                           </p>
-                        </div>
-                        <div className={`ml-4 px-2 py-1 rounded-full text-xs font-medium ${getScoreColor(company.investmentScore)}`}>
-                          Score: {company.investmentScore}/10
+                        </div>                        <div className={`ml-4 px-2 py-1 rounded-full text-xs font-medium ${getScoreColor(company.investmentScore ?? 0)}`}>
+                          Score: {company.investmentScore ?? 0}/10
                         </div>
                       </div>
 
@@ -291,7 +282,7 @@ export default function SearchPage() {
                         <div className="flex items-center space-x-2">
                           <UsersIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-gray-600">Employees:</span>
-                          <span className="font-medium text-gray-900">{formatHeadcount(company.headcount)}</span>
+                          <span className="font-medium text-gray-900">{formatHeadcount(company.headcount ?? 0)}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <ArrowTrendingUpIcon className="w-4 h-4 text-gray-400" />
