@@ -1,7 +1,6 @@
 'use client';
 
 import { CompanyProfile } from '@/components/dashboard/CompanyProfile';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { notFound } from 'next/navigation';
 
@@ -15,9 +14,11 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
   }
   return (
     <ProtectedRoute>
-      <DashboardLayout>
-        <CompanyProfile companyId={id} />
-      </DashboardLayout>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <CompanyProfile companyId={id} />
+        </div>
+      </div>
     </ProtectedRoute>
   );
 }

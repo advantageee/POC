@@ -1,5 +1,6 @@
 using InvestorCodex.Api.Data;
 using InvestorCodex.Api.Models;
+using InvestorCodex.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvestorCodex.Api.Controllers;
@@ -9,10 +10,17 @@ namespace InvestorCodex.Api.Controllers;
 public class CompaniesController : ControllerBase
 {
     private readonly ICompanyRepository _companyRepository;
+    private readonly IApolloService _apolloService;
+    private readonly ILogger<CompaniesController> _logger;
 
-    public CompaniesController(ICompanyRepository companyRepository)
+    public CompaniesController(
+        ICompanyRepository companyRepository, 
+        IApolloService apolloService, 
+        ILogger<CompaniesController> logger)
     {
         _companyRepository = companyRepository;
+        _apolloService = apolloService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -28,6 +36,18 @@ public class CompaniesController : ControllerBase
     {
         try
         {
+            // Try to get real data from Apollo first
+            _logger.LogInformation("Fetching companies from Apollo API");
+            var apolloResult = await _apolloService.GetCompaniesAsync(page, pageSize, search);
+            
+            if (apolloResult.Data.Any())
+            {
+                _logger.LogInformation("Successfully fetched {Count} companies from Apollo API", apolloResult.Data.Count);
+                return Ok(apolloResult);
+            }
+
+            // Fallback to database if Apollo fails
+            _logger.LogInformation("Apollo API returned no data, falling back to database");
             var result = await _companyRepository.GetCompaniesAsync(
                 page, pageSize, search, industry, fundingStage, 
                 investmentScoreMin, investmentScoreMax, tags);

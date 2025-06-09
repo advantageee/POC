@@ -13,6 +13,7 @@
     "@azure/msal-react": "^3.0.12",
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
+    "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.513.0",

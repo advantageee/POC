@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using InvestorCodex.Api.Configuration;
 using InvestorCodex.Api.Data;
+using InvestorCodex.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +16,19 @@ builder.Services.Configure<ApolloSettings>(
 builder.Services.Configure<TwitterAPISettings>(
     builder.Configuration.GetSection(TwitterAPISettings.SectionName));
 
+// Add HTTP clients for external services
+builder.Services.AddHttpClient<IApolloService, ApolloService>();
+builder.Services.AddHttpClient<ITwitterService, TwitterService>();
+
 // Add repository services
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
 builder.Services.AddScoped<ISignalRepository, SignalRepository>();
+
+// Add external API services
+builder.Services.AddScoped<IApolloService, ApolloService>();
+builder.Services.AddScoped<ITwitterService, TwitterService>();
 
 // Add services to the container
 builder.Services.AddControllers();

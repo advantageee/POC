@@ -7,12 +7,10 @@ namespace InvestorCodex.SyncService.Data;
 public class ApolloClient
 {
     private readonly HttpClient _http;
-    private readonly string _apiKey;
-
-    public ApolloClient(HttpClient http, IConfiguration config)
+    private readonly string _apiKey;    public ApolloClient(HttpClient http, IConfiguration config)
     {
         _http = http;
-        _apiKey = config["APOLLO_API_KEY"] ?? string.Empty;
+        _apiKey = config["Apollo:ApiKey"] ?? string.Empty;
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
     }
 
