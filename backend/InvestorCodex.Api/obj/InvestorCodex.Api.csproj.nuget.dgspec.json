@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj": {}
+    "c:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj": {
+    "c:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj",
+        "projectUniqueName": "c:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj",
         "projectName": "InvestorCodex.Api",
-        "projectPath": "C:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj",
+        "projectPath": "c:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj",
         "packagesPath": "C:\\Users\\puref\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\obj\\",
+        "outputPath": "c:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
