@@ -16,17 +16,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isLocallyAuthenticated, setIsLocallyAuthenticated] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
   useEffect(() => {
-    // If authentication is disabled, check for simple localStorage auth
+    // If authentication is disabled, allow access to all pages
     if (!isAuthenticationEnabled) {
-      const localAuth = localStorage.getItem('isAuthenticated') === 'true';
-      setIsLocallyAuthenticated(localAuth);
-      
-      if (!localAuth && pathname !== '/login') {
-        router.push('/login');
-        return;
-      }
+      setIsLocallyAuthenticated(true);
       return;
     }
 
@@ -48,16 +41,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         });
     }
   }, [isAuthenticated, isLoggingIn, instance, isAuthenticationEnabled, router, pathname]);
-
   // If authentication is disabled, use localStorage check
   if (!isAuthenticationEnabled) {
-    if (!isLocallyAuthenticated && pathname !== '/login') {
-      return null; // Redirect is happening
-    }
-    if (pathname === '/login' && isLocallyAuthenticated) {
-      router.push('/dashboard');
-      return null;
-    }
     return <>{children}</>;
   }
 

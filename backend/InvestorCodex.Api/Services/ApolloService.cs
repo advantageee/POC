@@ -54,8 +54,7 @@ public class ApolloService : IApolloService
         _httpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
         _httpClient.DefaultRequestHeaders.Add("X-Api-Key", _settings.ApiKey);
     }    public async Task<PaginatedResponse<Company>> GetCompaniesAsync(int page, int pageSize, string? search = null)
-    {
-        try
+    {        try
         {
             // First check if we have companies in the database
             var dbResult = await _companyRepository.GetCompaniesAsync(page, pageSize, search);
@@ -70,13 +69,21 @@ public class ApolloService : IApolloService
             // If database is sparse, try to get from Apollo and supplement
             _logger.LogInformation("Database has limited data, querying Apollo API for search: {Search}", search ?? "default");
             
-            // Try multiple search terms if the provided search doesn't yield results
+            // Try the user's search query first, then fallback to investor terms if no results
             var searchTerms = new List<string>();
             if (!string.IsNullOrEmpty(search))
             {
                 searchTerms.Add(search);
+                // Only add investor terms as fallback if the search doesn't match common company patterns
+                if (!IsLikelyCompanyName(search))
+                {
+                    searchTerms.AddRange(_investorSearchTerms.Take(2)); // Add top 2 investor terms
+                }
             }
-            searchTerms.AddRange(_investorSearchTerms.Take(2)); // Add top 2 investor terms
+            else
+            {
+                searchTerms.AddRange(_investorSearchTerms.Take(2)); // Default to investor terms
+            }
             
             var bestResult = new PaginatedResponse<Company>
             {
@@ -537,19 +544,27 @@ public class ApolloService : IApolloService
             return spaceIndex > 0 ? companyPart.Substring(0, spaceIndex) : companyPart;
         }
         return null;
-    }
-
-    private async Task<PaginatedResponse<Company>> GetCompaniesFromApolloAsync(int page, int pageSize, string? search = null)
+    }    private async Task<PaginatedResponse<Company>> GetCompaniesFromApolloAsync(int page, int pageSize, string? search = null)
     {
         try
         {
-            var requestBody = new
-            {
-                page = page,
-                per_page = pageSize,
-                person_titles = new[] { "founder", "ceo", "managing partner", "investment partner", "principal" },
-                q_keywords = search ?? "venture capital"
-            };
+            // If search is provided, use it directly as company name/keywords
+            // Otherwise fall back to investor-focused search
+            var requestBody = !string.IsNullOrEmpty(search) && !_investorSearchTerms.Contains(search) 
+                ? new
+                {
+                    page = page,
+                    per_page = pageSize,
+                    q_organization_name = search, // Search by company name
+                    q_keywords = search // Also search in keywords
+                }
+                : new
+                {
+                    page = page,
+                    per_page = pageSize,
+                    person_titles = new[] { "founder", "ceo", "managing partner", "investment partner", "principal" },
+                    q_keywords = search ?? "venture capital"
+                };
 
             var json = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");

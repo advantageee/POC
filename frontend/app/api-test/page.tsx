@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { companiesApi } from '@/lib/api';
-import { PaginatedResponse } from '@/types/api';
-import { Company } from '@/types/api';
+import type { PaginatedResponse, Company } from '@/types';
 
 export default function ApiTestPage() {
   const [status, setStatus] = useState('Initializing...');

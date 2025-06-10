@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - Investor Codex</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .result { margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 3px; }
+        button { padding: 10px 15px; margin: 5px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; width: 200px; }
+        pre { white-space: pre-wrap; background-color: #f1f1f1; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Investor Codex API Test</h1>
+        
+        <div class="test-section">
+            <h2>1. Health Check</h2>
+            <button onclick="testHealth()">Test Health Endpoint</button>
+            <div id="health-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Company Search Test</h2>
+            <input type="text" id="search-query" placeholder="Enter company name (e.g., IBM)" value="IBM">
+            <button onclick="testSearch()">Search Companies</button>
+            <div id="search-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Companies List</h2>
+            <button onclick="testCompanies()">Get All Companies</button>
+            <div id="companies-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Signals Test</h2>
+            <button onclick="testSignals()">Get Signals</button>
+            <div id="signals-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:5000/api';
+
+        async function makeRequest(url, resultId) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.innerHTML = 'Loading...';
+            
+            try {
+                console.log('Making request to:', url);
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">
+                        <strong>Success (${response.status})</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">
+                        <strong>Error (${response.status})</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">
+                    <strong>Network Error:</strong><br>
+                    ${error.message}<br>
+                    <em>Make sure the backend server is running on localhost:5000</em>
+                </div>`;
+            }
+        }
+
+        function testHealth() {
+            makeRequest(`${BASE_URL}/health`, 'health-result');
+        }
+
+        function testSearch() {
+            const query = document.getElementById('search-query').value;
+            if (!query.trim()) {
+                document.getElementById('search-result').innerHTML = '<div class="error">Please enter a search query</div>';
+                return;
+            }
+            makeRequest(`${BASE_URL}/companies/search?query=${encodeURIComponent(query)}`, 'search-result');
+        }
+
+        function testCompanies() {
+            makeRequest(`${BASE_URL}/companies?pageSize=5`, 'companies-result');
+        }
+
+        function testSignals() {
+            makeRequest(`${BASE_URL}/signals?pageSize=5`, 'signals-result');
+        }
+
+        // Auto-test health on page load
+        window.onload = function() {
+            testHealth();
+        };
+    </script>
+</body>
+</html>
