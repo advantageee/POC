@@ -65,23 +65,25 @@ export const signalsApi = {
   getAll: async (params?: {
     page?: number;
     pageSize?: number;
-    severity?: string[];
-    type?: string[];
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<PaginatedResponse<Signal & { company: Pick<Company, 'id' | 'name' | 'domain'> }>> => {
+    search?: string;
+    companyId?: string;
+    types?: string[];
+    severities?: string[];
+    minConfidence?: number;
+  }): Promise<PaginatedResponse<Signal>> => {
     const searchParams = new URLSearchParams();
     
     if (params?.page) searchParams.set('page', params.page.toString());
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
-    if (params?.severity) {
-      params.severity.forEach(s => searchParams.append('severity', s));
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.companyId) searchParams.set('companyId', params.companyId);
+    if (params?.minConfidence) searchParams.set('minConfidence', params.minConfidence.toString());
+    if (params?.types?.length) {
+      params.types.forEach(type => searchParams.append('types', type));
     }
-    if (params?.type) {
-      params.type.forEach(t => searchParams.append('type', t));
+    if (params?.severities?.length) {
+      params.severities.forEach(severity => searchParams.append('severities', severity));
     }
-    if (params?.dateFrom) searchParams.set('dateFrom', params.dateFrom);
-    if (params?.dateTo) searchParams.set('dateTo', params.dateTo);
     
     return api.get(`/api/signals?${searchParams.toString()}`);
   },
@@ -89,8 +91,17 @@ export const signalsApi = {
   getById: (id: string): Promise<Signal> =>
     api.get(`/api/signals/${id}`),
 
-  markAsRead: (id: string): Promise<void> =>
-    api.put(`/api/signals/${id}/read`),
+  create: (signal: Omit<Signal, 'id' | 'detectedAt' | 'processedAt'>): Promise<Signal> =>
+    api.post('/api/signals', signal),
+
+  update: (id: string, signal: Partial<Signal>): Promise<Signal> =>
+    api.put(`/api/signals/${id}`, signal),
+
+  delete: (id: string): Promise<void> =>
+    api.delete(`/api/signals/${id}`),
+
+  refresh: (): Promise<void> =>
+    api.post('/api/signals/refresh'),
 };
 
 export const exportApi = {
@@ -116,4 +127,34 @@ export const embeddingApi = {
     }
     return api.get(`/api/embedding/search?${searchParams.toString()}`);
   },
+};
+
+export const contactsApi = {
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    companyId?: string;
+  }): Promise<PaginatedResponse<Contact>> => {
+    const searchParams = new URLSearchParams();
+    
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.companyId) searchParams.set('companyId', params.companyId);
+    
+    return api.get(`/api/contacts?${searchParams.toString()}`);
+  },
+
+  getById: (id: string): Promise<Contact> =>
+    api.get(`/api/contacts/${id}`),
+
+  create: (contact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>): Promise<Contact> =>
+    api.post('/api/contacts', contact),
+
+  update: (id: string, contact: Partial<Contact>): Promise<Contact> =>
+    api.put(`/api/contacts/${id}`, contact),
+
+  delete: (id: string): Promise<void> =>
+    api.delete(`/api/contacts/${id}`),
 };

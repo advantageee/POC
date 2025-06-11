@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "p50Kk6iJ7i8=",
+  "dgSpecHash": "B7Sntbxomug=",
   "success": true,
-  "projectFilePath": "c:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj",
+  "projectFilePath": "C:\\Users\\puref\\source\\repos\\advantageee\\POC\\backend\\InvestorCodex.Api\\InvestorCodex.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\puref\\.nuget\\packages\\azure.ai.openai\\1.0.0-beta.17\\azure.ai.openai.1.0.0-beta.17.nupkg.sha512",
     "C:\\Users\\puref\\.nuget\\packages\\azure.core\\1.39.0\\azure.core.1.39.0.nupkg.sha512",

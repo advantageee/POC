@@ -42,11 +42,18 @@ export interface Contact {
   name: string;
   title?: string;
   email?: string;
+  phone?: string;
+  location?: string;
   linkedInUrl?: string;
+  linkedinUrl?: string;
+  company?: string;
   persona?: string;
   summary?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  tags?: string[];
+  notes?: string;
+  lastContactedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Investment {
@@ -73,8 +80,9 @@ export interface Signal {
   severity: 'low' | 'medium' | 'high';
   tags?: string[];
   summary?: string;
-  detectedAt: Date;
-  processedAt: Date;
+  detectedAt: string;
+  processedAt?: string;
+  confidence?: number;
 }
 
 export interface SimilarCompany {

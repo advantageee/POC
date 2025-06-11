@@ -72,10 +72,11 @@ public class ApolloService : IApolloService
             // Try the user's search query first, then fallback to investor terms if no results
             var searchTerms = new List<string>();
             if (!string.IsNullOrEmpty(search))
-            {
-                searchTerms.Add(search);
+            {            searchTerms.Add(search);
                 // Only add investor terms as fallback if the search doesn't match common company patterns
-                if (!IsLikelyCompanyName(search))
+                if (!search.ToLower().Contains("corp") && !search.ToLower().Contains("inc") && 
+                    !search.ToLower().Contains("ltd") && !search.ToLower().Contains("llc") &&
+                    !search.ToLower().Contains("company") && search.Length > 3)
                 {
                     searchTerms.AddRange(_investorSearchTerms.Take(2)); // Add top 2 investor terms
                 }
@@ -548,23 +549,31 @@ public class ApolloService : IApolloService
     {
         try
         {
-            // If search is provided, use it directly as company name/keywords
-            // Otherwise fall back to investor-focused search
-            var requestBody = !string.IsNullOrEmpty(search) && !_investorSearchTerms.Contains(search) 
-                ? new
+            // Create request body based on search type
+            object requestBody;
+            
+            if (!string.IsNullOrEmpty(search) && !_investorSearchTerms.Contains(search))
+            {
+                // Search by company name/keywords
+                requestBody = new
                 {
                     page = page,
                     per_page = pageSize,
-                    q_organization_name = search, // Search by company name
-                    q_keywords = search // Also search in keywords
-                }
-                : new
+                    q_organization_name = search,
+                    q_keywords = search
+                };
+            }
+            else
+            {
+                // Investor-focused search
+                requestBody = new
                 {
                     page = page,
                     per_page = pageSize,
                     person_titles = new[] { "founder", "ceo", "managing partner", "investment partner", "principal" },
                     q_keywords = search ?? "venture capital"
                 };
+            }
 
             var json = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
