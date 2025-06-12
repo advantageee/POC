@@ -158,6 +158,66 @@ export default function SettingsPage() {
         },
       ],
     },
+    {
+      name: 'Vector DB',
+      icon: <CloudIcon className="h-6 w-6" />,
+      description: 'Embeddings and similarity search storage',
+      status: 'disconnected',
+      lastTested: 'Never',
+      fields: [
+        {
+          key: 'vectordb_endpoint',
+          label: 'Endpoint',
+          type: 'url',
+          value: '',
+          placeholder: 'https://my-vector-db.ai/',
+          required: true,
+        },
+        {
+          key: 'vectordb_index',
+          label: 'Index',
+          type: 'text',
+          value: '',
+          placeholder: 'companies',
+          required: true,
+        },
+        {
+          key: 'vectordb_key',
+          label: 'API Key',
+          type: 'password',
+          value: '',
+          placeholder: 'Key for Vector DB',
+          required: true,
+          masked: true,
+        },
+      ],
+    },
+    {
+      name: 'Blob Storage',
+      icon: <CloudIcon className="h-6 w-6" />,
+      description: 'Used for exported files and documents',
+      status: 'disconnected',
+      lastTested: 'Never',
+      fields: [
+        {
+          key: 'blob_connection',
+          label: 'Connection String',
+          type: 'password',
+          value: '',
+          placeholder: 'Azure Storage connection string',
+          required: true,
+          masked: true,
+        },
+        {
+          key: 'blob_container',
+          label: 'Container',
+          type: 'text',
+          value: '',
+          placeholder: 'exports',
+          required: true,
+        },
+      ],
+    },
   ]);
 
   useEffect(() => {
