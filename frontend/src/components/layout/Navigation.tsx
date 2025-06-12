@@ -13,13 +13,11 @@ import {
   XMarkIcon,
   HomeIcon,
   DocumentTextIcon,
-  Cog6ToothIcon,
-  NewspaperIcon
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'NLWeb', href: '/nlweb', icon: NewspaperIcon },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon },
   { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
   { name: 'Signals', href: '/alerts', icon: BellIcon },

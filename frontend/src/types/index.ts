@@ -144,21 +144,3 @@ export interface AuthUser {
   accessToken: string;
   refreshToken?: string;
 }
-
-export interface MCPEntry {
-  id: string;
-  headline: string;
-  summary: string;
-  link: string;
-  publishedAt: string;
-  source: string;
-  topics: string[];
-  confidence: number;
-}
-
-export interface MCPContext {
-  id: string;
-  title: string;
-  timestamp: string;
-  entries: MCPEntry[];
-}
