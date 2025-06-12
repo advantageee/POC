@@ -10,6 +10,8 @@ public class ExportRequest
 
 public class ExportJob
 {
+    public string Type { get; set; } = "companies";
+    public string Format { get; set; } = "csv";
     public Guid Id { get; set; }
     public string Status { get; set; } = "pending"; // pending, processing, completed, failed
     public string? DownloadUrl { get; set; }
