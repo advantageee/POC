@@ -32,3 +32,14 @@ TWITTERAPI__BEARERTOKEN=<Twitter bearer token>
 
 Ensure these are set before running the backend project.
 
+## Database Setup
+
+The API uses PostgreSQL. On startup the `SignalRepository` checks for the
+`signals` table and runs `schema.sql` if it is missing. To initialize an empty
+database:
+
+1. Create a PostgreSQL database and update the `DefaultConnection` string in
+   `appsettings.json` or via environment variables.
+2. Run the API from `backend/InvestorCodex.Api` using `dotnet run`.
+   The schema and sample data will be created automatically on first launch.
+
