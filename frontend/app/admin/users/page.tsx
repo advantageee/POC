@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
+import { usersApi } from '@/lib/api';
 import {
   UserGroupIcon,
   PlusIcon,
@@ -29,6 +30,9 @@ export default function UserManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithActions | null>(null);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserRoles, setNewUserRoles] = useState('');
 
   useEffect(() => {
     loadUsers();
@@ -37,55 +41,17 @@ export default function UserManagementPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with real API call when backend is implemented
-      // const response = await usersApi.getAll();
-      // setUsers(response.data);
-      
-      // Mock data for now
-      const mockUsers: UserWithActions[] = [
-        {
-          id: '1',
-          email: 'admin@investorcodex.com',
-          name: 'System Administrator',
-          roles: ['Admin'],
-          lastLogin: new Date('2024-06-10T09:00:00Z'),
-          createdAt: new Date('2024-01-01T00:00:00Z'),
-          lastLoginFormatted: '1 day ago',
-          createdAtFormatted: 'Jan 1, 2024',
-        },
-        {
-          id: '2',
-          email: 'analyst@investorcodex.com',
-          name: 'Senior Analyst',
-          roles: ['Analyst'],
-          lastLogin: new Date('2024-06-11T08:30:00Z'),
-          createdAt: new Date('2024-02-15T00:00:00Z'),
-          lastLoginFormatted: '2 hours ago',
-          createdAtFormatted: 'Feb 15, 2024',
-        },
-        {
-          id: '3',
-          email: 'viewer@investorcodex.com',
-          name: 'Portfolio Viewer',
-          roles: ['Viewer'],
-          lastLogin: new Date('2024-06-09T14:20:00Z'),
-          createdAt: new Date('2024-03-01T00:00:00Z'),
-          lastLoginFormatted: '2 days ago',
-          createdAtFormatted: 'Mar 1, 2024',
-        },
-        {
-          id: '4',
-          email: 'john.doe@investorcodex.com',
-          name: 'John Doe',
-          roles: ['Analyst', 'Viewer'],
-          lastLogin: new Date('2024-06-11T07:45:00Z'),
-          createdAt: new Date('2024-04-10T00:00:00Z'),
-          lastLoginFormatted: '3 hours ago',
-          createdAtFormatted: 'Apr 10, 2024',
-        },
-      ];
-      
-      setUsers(mockUsers);
+      const response = await usersApi.getAll();
+      const formatted = response.map(u => ({
+        ...u,
+        lastLoginFormatted: u.lastLoginAt
+          ? new Date(u.lastLoginAt).toLocaleString()
+          : undefined,
+        createdAtFormatted: u.createdAt
+          ? new Date(u.createdAt).toLocaleDateString()
+          : undefined,
+      }));
+      setUsers(formatted);
     } catch (error) {
       console.error('Failed to load users:', error);
     } finally {
@@ -114,12 +80,41 @@ export default function UserManagementPage() {
     }
   };
 
+  const handleCreateUser = async () => {
+    try {
+      const roles = newUserRoles
+        .split(',')
+        .map(r => r.trim())
+        .filter(Boolean);
+      const created = await usersApi.create({
+        email: newUserEmail,
+        name: newUserName,
+        roles,
+      });
+      setUsers([
+        ...users,
+        {
+          ...created,
+          lastLoginFormatted: undefined,
+          createdAtFormatted: created.createdAt
+            ? new Date(created.createdAt).toLocaleDateString()
+            : undefined,
+        },
+      ]);
+      setShowAddModal(false);
+      setNewUserEmail('');
+      setNewUserName('');
+      setNewUserRoles('');
+    } catch (error) {
+      console.error('Failed to create user:', error);
+    }
+  };
+
   const handleDeleteUser = async (userId: string) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
-    
+
     try {
-      // TODO: Implement real API call
-      // await usersApi.delete(userId);
+      await usersApi.delete(userId);
       setUsers(users.filter(user => user.id !== userId));
     } catch (error) {
       console.error('Failed to delete user:', error);
@@ -338,17 +333,30 @@ export default function UserManagementPage() {
         </div>
       </div>
 
-      {/* TODO: Add User Modal and Edit User Modal components */}
       {showAddModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New User</h3>
-            <p className="text-gray-500 mb-4">User creation functionality will be implemented with backend API.</p>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 space-y-4">
+            <h3 className="text-lg font-medium text-gray-900">Add New User</h3>
+            <Input
+              placeholder="Email"
+              value={newUserEmail}
+              onChange={(e) => setNewUserEmail(e.target.value)}
+            />
+            <Input
+              placeholder="Name"
+              value={newUserName}
+              onChange={(e) => setNewUserName(e.target.value)}
+            />
+            <Input
+              placeholder="Roles (comma separated)"
+              value={newUserRoles}
+              onChange={(e) => setNewUserRoles(e.target.value)}
+            />
             <div className="flex justify-end space-x-3">
               <Button variant="outline" onClick={() => setShowAddModal(false)}>
                 Cancel
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleCreateUser}>
                 Create User
               </Button>
             </div>

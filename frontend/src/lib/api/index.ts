@@ -10,6 +10,7 @@ import type {
   ExportJob,
   SimilarCompany,
   MCPContext,
+  User,
 } from '@/types';
 
 export const companiesApi = {
@@ -162,4 +163,13 @@ export const contactsApi = {
 
 export const contextApi = {
   get: (id: string): Promise<MCPContext> => api.get(`/context?id=${id}`),
+};
+
+export const usersApi = {
+  getAll: (): Promise<User[]> => api.get('/api/users'),
+  getById: (id: string): Promise<User> => api.get(`/api/users/${id}`),
+  create: (user: Partial<User>): Promise<User> => api.post('/api/users', user),
+  update: (id: string, user: Partial<User>): Promise<User> =>
+    api.put(`/api/users/${id}`, user),
+  delete: (id: string): Promise<void> => api.delete(`/api/users/${id}`),
 };
