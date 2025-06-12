@@ -7,10 +7,8 @@ import logging
 import asyncio
 from typing import Any, Dict, List, Optional
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-import json
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -41,8 +39,6 @@ MODEL = "text-embedding-3-large"
 openai_client = None
 search_client = None
 
-# In-memory vector store for development (fallback when Azure not available)
-vector_store = {}
 
 @app.on_event("startup")
 async def startup_event():
@@ -129,20 +125,17 @@ async def vectorize(req: VectorizeRequest) -> Dict[str, Any]:
             **req.metadata,
         }
         
-        if search_client:
-            try:
-                # Store in Azure Search
-                result = search_client.upload_documents([document])
-                logging.info(f"Stored document in Azure Search: {document['id']}")
-            except Exception as e:
-                logging.error(f"Failed to store in Azure Search: {e}")
-                # Fallback to in-memory store
-                vector_store[document['id']] = document
-        else:
-            # Store in memory
-            vector_store[document['id']] = document
-            logging.info(f"Stored document in memory: {document['id']}")
-        
+        if not search_client:
+            raise HTTPException(status_code=500, detail="Azure Cognitive Search is not configured")
+
+        try:
+            # Store in Azure Search
+            search_client.upload_documents([document])
+            logging.info(f"Stored document in Azure Search: {document['id']}")
+        except Exception as e:
+            logging.error(f"Failed to store in Azure Search: {e}")
+            raise HTTPException(status_code=500, detail="Failed to store vector")
+
         return document
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Vectorization failed: {str(e)}")
@@ -153,57 +146,37 @@ async def search(q: str, limit: int = 10) -> List[SearchResponse]:
     try:
         # Generate query embedding
         query_vector = await generate_embedding(q)
-        
-        if search_client:
-            try:
-                # Use Azure Cognitive Search
-                from azure.search.documents.models import VectorizedQuery
-                vector_query = VectorizedQuery(
-                    vector=query_vector,
-                    k_nearest_neighbors=limit,
-                    fields="vector"
+
+        if not search_client:
+            raise HTTPException(status_code=500, detail="Azure Cognitive Search is not configured")
+
+        try:
+            # Use Azure Cognitive Search
+            from azure.search.documents.models import VectorizedQuery
+            vector_query = VectorizedQuery(
+                vector=query_vector,
+                k_nearest_neighbors=limit,
+                fields="vector"
+            )
+
+            results = search_client.search(
+                search_text=None,
+                vector_queries=[vector_query],
+                top=limit
+            )
+
+            return [
+                SearchResponse(
+                    id=result['id'],
+                    score=result['@search.score'],
+                    metadata={k: v for k, v in result.items() if k not in ['id', 'vector', '@search.score']},
+                    text=result.get('text')
                 )
-                
-                results = search_client.search(
-                    search_text=None,
-                    vector_queries=[vector_query],
-                    top=limit
-                )
-                
-                return [
-                    SearchResponse(
-                        id=result['id'],
-                        score=result['@search.score'],
-                        metadata={k: v for k, v in result.items() if k not in ['id', 'vector', '@search.score']},
-                        text=result.get('text')
-                    )
-                    for result in results
-                ]
-            except Exception as e:
-                logging.error(f"Azure Search failed: {e}")
-        
-        # Fallback to in-memory search
-        if not vector_store:
-            return []
-        
-        # Calculate similarities
-        results = []
-        query_vec = np.array(query_vector).reshape(1, -1)
-        
-        for doc_id, document in vector_store.items():
-            doc_vec = np.array(document['vector']).reshape(1, -1)
-            similarity = cosine_similarity(query_vec, doc_vec)[0][0]
-            
-            results.append(SearchResponse(
-                id=doc_id,
-                score=float(similarity),
-                metadata={k: v for k, v in document.items() if k not in ['id', 'vector']},
-                text=document.get('text')
-            ))
-        
-        # Sort by similarity and return top results
-        results.sort(key=lambda x: x.score, reverse=True)
-        return results[:limit]
+                for result in results
+            ]
+        except Exception as e:
+            logging.error(f"Azure Search failed: {e}")
+            raise HTTPException(status_code=500, detail="Search failed")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
@@ -232,70 +205,7 @@ async def health_check():
         "status": "healthy",
         "azure_openai_available": openai_client is not None,
         "azure_search_available": search_client is not None,
-        "vector_store_size": len(vector_store)
     }
-
-
-@app.get("/api/embedding/search")
-async def search(q: str, limit: int = 10) -> List[SearchResponse]:
-    """Perform a vector similarity search."""
-    try:
-        # Generate query embedding
-        query_vector = await generate_embedding(q)
-        
-        if search_client:
-            try:
-                # Use Azure Cognitive Search
-                from azure.search.documents.models import VectorizedQuery
-                vector_query = VectorizedQuery(
-                    vector=query_vector,
-                    k_nearest_neighbors=limit,
-                    fields="vector"
-                )
-                
-                results = search_client.search(
-                    search_text=None,
-                    vector_queries=[vector_query],
-                    top=limit
-                )
-                
-                return [
-                    SearchResponse(
-                        id=result['id'],
-                        score=result['@search.score'],
-                        metadata={k: v for k, v in result.items() if k not in ['id', 'vector', '@search.score']},
-                        text=result.get('text')
-                    )
-                    for result in results
-                ]
-            except Exception as e:
-                logging.error(f"Azure Search failed: {e}")
-        
-        # Fallback to in-memory search
-        if not vector_store:
-            return []
-        
-        # Calculate similarities
-        results = []
-        query_vec = np.array(query_vector).reshape(1, -1)
-        
-        for doc_id, document in vector_store.items():
-            doc_vec = np.array(document['vector']).reshape(1, -1)
-            similarity = cosine_similarity(query_vec, doc_vec)[0][0]
-            
-            results.append(SearchResponse(
-                id=doc_id,
-                score=float(similarity),
-                metadata={k: v for k, v in document.items() if k not in ['id', 'vector']},
-                text=document.get('text')
-            ))
-        
-        # Sort by similarity and return top results
-        results.sort(key=lambda x: x.score, reverse=True)
-        return results[:limit]
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 
 if __name__ == "__main__":
