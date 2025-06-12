@@ -71,13 +71,17 @@ CREATE TABLE signals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID REFERENCES companies(id),
     type VARCHAR(100),
-    severity VARCHAR(50),
+    title VARCHAR(255),
     description TEXT,
+    source VARCHAR(255),
     url VARCHAR(500),
+    severity VARCHAR(50),
+    tags TEXT[],
     summary TEXT,
-    risk_score REAL DEFAULT 0.0,
+    detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    confidence REAL DEFAULT 0.0
 );
 
 -- Insert some sample data
@@ -212,55 +216,80 @@ FROM companies c WHERE c.name = 'Alphabet Inc.'
 ON CONFLICT DO NOTHING;
 
 -- Insert sample signals data
-INSERT INTO signals (company_id, type, severity, description, url, summary, risk_score)
-SELECT 
+INSERT INTO signals (company_id, type, title, description, source, url, severity, tags, summary, detected_at, processed_at, confidence)
+SELECT
     c.id,
     'News',
-    'Medium',
+    'Product Line Expansion',
     'Apple announces new product line expansion',
+    'news',
     'https://news.apple.com/product-line',
+    'Medium',
+    ARRAY['news'],
     'Apple is expanding its product line with new innovative devices',
-    5.2
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    0.85
 FROM companies c WHERE c.name = 'Apple Inc.'
 UNION ALL
-SELECT 
+SELECT
     c.id,
     'Financial',
-    'Low',
+    'Strong Quarterly Earnings',
     'Microsoft reports strong quarterly earnings',
+    'news',
     'https://investor.microsoft.com/earnings',
+    'Low',
+    ARRAY['finance'],
     'Microsoft exceeded earnings expectations for Q3',
-    2.1
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    0.6
 FROM companies c WHERE c.name = 'Microsoft Corporation'
 UNION ALL
-SELECT 
+SELECT
     c.id,
     'Regulatory',
-    'High',
+    'Antitrust Investigation',
     'Amazon faces antitrust investigation',
+    'news',
     'https://news.amazon.com/antitrust',
+    'High',
+    ARRAY['legal'],
     'Amazon is under scrutiny for potential monopolistic practices',
-    8.5
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    0.9
 FROM companies c WHERE c.name = 'Amazon.com Inc.'
 UNION ALL
-SELECT 
+SELECT
     c.id,
     'Technical',
-    'Medium',
+    'Vehicle Software Recall',
     'Tesla recalls vehicles due to software issue',
+    'news',
     'https://tesla.com/safety-recall',
+    'Medium',
+    ARRAY['recall'],
     'Tesla is recalling certain model years due to autopilot software concerns',
-    6.3
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    0.75
 FROM companies c WHERE c.name = 'Tesla Inc.'
 UNION ALL
-SELECT 
+SELECT
     c.id,
     'Leadership',
-    'Low',
+    'New AI Research Initiative',
     'Google announces new AI research initiative',
+    'news',
     'https://ai.google/research',
+    'Low',
+    ARRAY['ai'],
     'Google is launching a new AI research division focused on ethical AI',
-    3.1
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    0.7
 FROM companies c WHERE c.name = 'Alphabet Inc.'
 ON CONFLICT DO NOTHING;
 
@@ -285,7 +314,8 @@ CREATE INDEX IF NOT EXISTS idx_investments_amount ON investments(amount);
 CREATE INDEX IF NOT EXISTS idx_signals_company_id ON signals(company_id);
 CREATE INDEX IF NOT EXISTS idx_signals_type ON signals(type);
 CREATE INDEX IF NOT EXISTS idx_signals_severity ON signals(severity);
-CREATE INDEX IF NOT EXISTS idx_signals_risk_score ON signals(risk_score);
+CREATE INDEX IF NOT EXISTS idx_signals_confidence ON signals(confidence);
+CREATE INDEX IF NOT EXISTS idx_signals_detected_at ON signals(detected_at);
 CREATE INDEX IF NOT EXISTS idx_signals_created_at ON signals(created_at);
 
 -- Composite indexes for common queries

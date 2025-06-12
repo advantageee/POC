@@ -12,6 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 // source control.
 builder.Configuration.AddEnvironmentVariables();
 
+// Add in-memory caching
+builder.Services.AddMemoryCache();
+
 // Add configuration settings
 builder.Services.Configure<AdvantageAISettings>(
     builder.Configuration.GetSection(AdvantageAISettings.SectionName));
@@ -50,7 +53,6 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Add external API services
 builder.Services.AddScoped<IApolloService, ApolloService>();
-builder.Services.AddScoped<ITwitterService, TwitterService>();
 builder.Services.AddScoped<IContextFeedService, ContextFeedService>();
 builder.Services.AddScoped<ISignalDetectionService, SignalDetectionService>();
 builder.Services.AddSingleton<IExportJobService, ExportJobService>();

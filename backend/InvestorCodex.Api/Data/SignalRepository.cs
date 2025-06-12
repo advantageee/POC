@@ -2,6 +2,9 @@ using Dapper;
 using Npgsql;
 using InvestorCodex.Api.Models;
 using System.Data;
+using System.Linq;
+using System.IO;
+
 
 namespace InvestorCodex.Api.Data;
 
@@ -11,8 +14,33 @@ public class SignalRepository : ISignalRepository
 
     public SignalRepository(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection") 
+        _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? "Host=localhost;Database=investorcodex;Username=postgres;Password=password";
+        EnsureSchema();
+    }
+
+    private void EnsureSchema()
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        connection.Open();
+
+        var tableExists = connection.ExecuteScalar<bool>(
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'signals');");
+
+        if (!tableExists)
+        {
+            var schemaPath = Path.Combine(AppContext.BaseDirectory, "schema.sql");
+            if (!File.Exists(schemaPath))
+            {
+                schemaPath = Path.Combine(Directory.GetCurrentDirectory(), "schema.sql");
+            }
+
+            if (File.Exists(schemaPath))
+            {
+                var sql = File.ReadAllText(schemaPath);
+                connection.Execute(sql);
+            }
+        }
     }
 
     public async Task<(IEnumerable<Signal> signals, int totalCount)> GetSignalsAsync(
@@ -23,8 +51,10 @@ public class SignalRepository : ISignalRepository
         string[]? types = null,
         string[]? severities = null)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
+        try
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
         var whereConditions = new List<string>();
         var parameters = new DynamicParameters();
@@ -120,13 +150,20 @@ public class SignalRepository : ISignalRepository
             splitOn: "company_id"
         );
 
-        return (signalDict.Values, totalCount);
+            return (signalDict.Values, totalCount);
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        {
+            return (Enumerable.Empty<Signal>(), 0);
+        }
     }
 
     public async Task<Signal?> GetSignalByIdAsync(Guid id)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
+        try
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
         var query = @"
             SELECT 
@@ -159,7 +196,7 @@ public class SignalRepository : ISignalRepository
             LEFT JOIN companies c ON s.company_id = c.id
             WHERE s.id = @id";
 
-        var signal = await connection.QueryAsync<Signal, Company, Signal>(
+            var signal = await connection.QueryAsync<Signal, Company, Signal>(
             query,
             (signal, company) =>
             {
@@ -170,65 +207,91 @@ public class SignalRepository : ISignalRepository
             splitOn: "company_id"
         );
 
-        return signal.FirstOrDefault();
+            return signal.FirstOrDefault();
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        {
+            return null;
+        }
     }
 
     public async Task<Signal> CreateSignalAsync(Signal signal)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
-
         signal.Id = Guid.NewGuid();
         signal.DetectedAt = DateTime.UtcNow;
         signal.ProcessedAt = DateTime.UtcNow;
 
-        var query = @"
-            INSERT INTO signals (
-                id, company_id, type, title, description, source, url, 
-                severity, tags, summary, detected_at, processed_at
-            ) VALUES (
-                @Id, @CompanyId, @Type, @Title, @Description, @Source, @Url,
-                @Severity, @Tags, @Summary, @DetectedAt, @ProcessedAt
-            ) RETURNING *";
+        try
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
-        var createdSignal = await connection.QuerySingleAsync<Signal>(query, signal);
-        return createdSignal;
+            var query = @"
+                INSERT INTO signals (
+                    id, company_id, type, title, description, source, url,
+                    severity, tags, summary, detected_at, processed_at
+                ) VALUES (
+                    @Id, @CompanyId, @Type, @Title, @Description, @Source, @Url,
+                    @Severity, @Tags, @Summary, @DetectedAt, @ProcessedAt
+                ) RETURNING *";
+
+            var createdSignal = await connection.QuerySingleAsync<Signal>(query, signal);
+            return createdSignal;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        {
+            return signal;
+        }
     }
 
     public async Task<Signal?> UpdateSignalAsync(Guid id, Signal signal)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
-
         signal.ProcessedAt = DateTime.UtcNow;
 
-        var query = @"
-            UPDATE signals SET
-                company_id = @CompanyId,
-                type = @Type,
-                title = @Title,
-                description = @Description,
-                source = @Source,
-                url = @Url,
-                severity = @Severity,
-                tags = @Tags,
-                summary = @Summary,
-                processed_at = @ProcessedAt
-            WHERE id = @Id
-            RETURNING *";
+        try
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
-        signal.Id = id;
-        var updatedSignal = await connection.QuerySingleOrDefaultAsync<Signal>(query, signal);
-        return updatedSignal;
+            var query = @"
+                UPDATE signals SET
+                    company_id = @CompanyId,
+                    type = @Type,
+                    title = @Title,
+                    description = @Description,
+                    source = @Source,
+                    url = @Url,
+                    severity = @Severity,
+                    tags = @Tags,
+                    summary = @Summary,
+                    processed_at = @ProcessedAt
+                WHERE id = @Id
+                RETURNING *";
+
+            signal.Id = id;
+            var updatedSignal = await connection.QuerySingleOrDefaultAsync<Signal>(query, signal);
+            return updatedSignal;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        {
+            return null;
+        }
     }
 
     public async Task<bool> DeleteSignalAsync(Guid id)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
+        try
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
-        var query = "DELETE FROM signals WHERE id = @id";
-        var affectedRows = await connection.ExecuteAsync(query, new { id });
-        return affectedRows > 0;
+            var query = "DELETE FROM signals WHERE id = @id";
+            var affectedRows = await connection.ExecuteAsync(query, new { id });
+            return affectedRows > 0;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        {
+            return false;
+        }
     }
 }
