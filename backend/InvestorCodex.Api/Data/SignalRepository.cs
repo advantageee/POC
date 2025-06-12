@@ -2,6 +2,7 @@ using Dapper;
 using Npgsql;
 using InvestorCodex.Api.Models;
 using System.Data;
+using System.IO;
 
 namespace InvestorCodex.Api.Data;
 
@@ -11,8 +12,33 @@ public class SignalRepository : ISignalRepository
 
     public SignalRepository(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection") 
+        _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? "Host=localhost;Database=investorcodex;Username=postgres;Password=password";
+        EnsureSchema();
+    }
+
+    private void EnsureSchema()
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        connection.Open();
+
+        var tableExists = connection.ExecuteScalar<bool>(
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'signals');");
+
+        if (!tableExists)
+        {
+            var schemaPath = Path.Combine(AppContext.BaseDirectory, "schema.sql");
+            if (!File.Exists(schemaPath))
+            {
+                schemaPath = Path.Combine(Directory.GetCurrentDirectory(), "schema.sql");
+            }
+
+            if (File.Exists(schemaPath))
+            {
+                var sql = File.ReadAllText(schemaPath);
+                connection.Execute(sql);
+            }
+        }
     }
 
     public async Task<(IEnumerable<Signal> signals, int totalCount)> GetSignalsAsync(
