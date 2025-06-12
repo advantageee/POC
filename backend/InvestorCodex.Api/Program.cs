@@ -53,7 +53,6 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Add external API services
 builder.Services.AddScoped<IApolloService, ApolloService>();
-builder.Services.AddScoped<ITwitterService, TwitterService>();
 builder.Services.AddScoped<IContextFeedService, ContextFeedService>();
 builder.Services.AddScoped<ISignalDetectionService, SignalDetectionService>();
 builder.Services.AddSingleton<IExportJobService, ExportJobService>();
