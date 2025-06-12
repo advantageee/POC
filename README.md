@@ -9,8 +9,26 @@ This repository contains a proof-of-concept implementation for the Investor Code
   * **InvestorCodex.SyncService** – Worker service that syncs companies and contacts from Apollo into PostgreSQL
   * **InvestmentFilingETL** – Python scripts that collect and enrich public investment filings
 * `frontend/` – Minimal Next.js app demonstrating the dashboard
-  * Includes an **API Configuration** screen under `/api-config`
+  * Includes an **API Configuration** screen under `/settings`
 * `docs/` – Project documentation including the full functional specification
 
 The project is at an early stage and currently only includes minimal scaffolding.
+
+## Configuration
+
+The API expects several credentials to be supplied via environment variables or
+your preferred secrets manager. The following variables are required:
+
+```
+ADVANTAGEAI__URL=<Azure OpenAI endpoint>
+ADVANTAGEAI__KEY=<Azure OpenAI key>
+ADVANTAGEAI__MODEL=<Model name>
+APOLLO__APIKEY=<Apollo API key>
+APOLLO__BASEURL=<Apollo base URL>
+TWITTERAPI__APIKEY=<Twitter API key>
+TWITTERAPI__APISECRET=<Twitter API secret>
+TWITTERAPI__BEARERTOKEN=<Twitter bearer token>
+```
+
+Ensure these are set before running the backend project.
 

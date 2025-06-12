@@ -221,16 +221,35 @@ export default function SettingsPage() {
   ]);
 
   useEffect(() => {
-    // Initialize masked fields
-    const initialMaskedFields = new Set<string>();
-    services.forEach(service => {
-      service.fields.forEach(field => {
-        if (field.masked) {
-          initialMaskedFields.add(`${service.name}_${field.key}`);
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const data = await res.json();
+          const updatedServices = services.map((service) => ({
+            ...service,
+            fields: service.fields.map((field) => ({
+              ...field,
+              value: data[field.key] ?? field.value,
+            })),
+          }));
+
+          const initialMaskedFields = new Set<string>();
+          updatedServices.forEach((s) => {
+            s.fields.forEach((f) => {
+              if (f.masked) initialMaskedFields.add(`${s.name}_${f.key}`);
+            });
+          });
+
+          setServices(updatedServices);
+          setMaskedFields(initialMaskedFields);
         }
-      });
-    });
-    setMaskedFields(initialMaskedFields);
+      } catch (err) {
+        console.error('Failed to load settings', err);
+      }
+    };
+
+    loadSettings();
   }, []);
 
   const getStatusIcon = (status: string) => {
@@ -317,9 +336,23 @@ export default function SettingsPage() {
   const saveConfiguration = async () => {
     try {
       setLoading(true);
-      // TODO: Implement real API call to save configuration
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+      const payload: Record<string, string> = {};
+      services.forEach((service) => {
+        service.fields.forEach((field) => {
+          payload[field.key] = field.value;
+        });
+      });
+
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to save');
+      }
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
