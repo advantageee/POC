@@ -20,6 +20,10 @@ builder.Services.Configure<ContextFeedSettings>(
 builder.Services.Configure<ExportSettings>(
     builder.Configuration.GetSection(ExportSettings.SectionName));
 
+// In-memory settings storage
+builder.Services.AddSingleton<ISettingsService>(sp =>
+    new InMemorySettingsService(sp.GetRequiredService<IConfiguration>()));
+
 // Add HTTP clients for external services
 builder.Services.AddHttpClient<IApolloService, ApolloService>();
 builder.Services.AddHttpClient<ITwitterService, TwitterService>();
