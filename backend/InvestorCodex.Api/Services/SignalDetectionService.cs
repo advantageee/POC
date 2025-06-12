@@ -232,11 +232,36 @@ public class SignalDetectionService : ISignalDetectionService
                     {
                         _logger.LogWarning(ex, "Failed to save Twitter signal");
                     }
-                }            }
+                }
+            }
 
-            // Note: News signals extraction requires specific company context
-            // For general signal detection, we rely on Twitter signals and database results
-            _logger.LogInformation("News signals require specific company context, skipping general news extraction");
+            // Get signals from news feeds
+            try
+            {
+                var newsSignals = await ExtractSignalsFromNewsAsync();
+                foreach (var newsSignal in newsSignals)
+                {
+                    var confidence = await CalculateSignalConfidenceAsync(newsSignal);
+                    newsSignal.Confidence = confidence;
+                    
+                    if (confidence >= minConfidence)
+                    {
+                        try
+                        {
+                            await _signalRepository.CreateSignalAsync(newsSignal);
+                            allSignals.Add(newsSignal);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to save news signal");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get news signals");
+            }
 
             // Filter for high confidence and return
             var highConfidenceSignals = allSignals
