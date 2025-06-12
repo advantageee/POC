@@ -20,9 +20,26 @@ namespace InvestorCodex.Api.Configuration
     public class TwitterAPISettings
     {
         public const string SectionName = "TwitterAPI";
-        
+
         public string ApiKey { get; set; } = string.Empty;
         public string ApiSecret { get; set; } = string.Empty;
         public string BearerToken { get; set; } = string.Empty;
+    }
+
+    public class VectorDbSettings
+    {
+        public const string SectionName = "VectorDb";
+
+        public string Endpoint { get; set; } = string.Empty;
+        public string Index { get; set; } = string.Empty;
+        public string Key { get; set; } = string.Empty;
+    }
+
+    public class BlobStorageSettings
+    {
+        public const string SectionName = "BlobStorage";
+
+        public string ConnectionString { get; set; } = string.Empty;
+        public string Container { get; set; } = string.Empty;
     }
 }

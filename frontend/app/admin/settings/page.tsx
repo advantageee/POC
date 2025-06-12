@@ -17,6 +17,8 @@ import {
   CloudIcon,
   GlobeAltIcon,
   ChatBubbleLeftRightIcon,
+  CircleStackIcon,
+  ArchiveBoxIcon,
 } from '@heroicons/react/24/outline';
 
 interface ServiceConfig {
@@ -155,6 +157,64 @@ export default function SettingsPage() {
           placeholder: 'Host=localhost;Database=investorcodex;Username=postgres;Password=yourpassword',
           required: true,
           masked: true,
+        },
+      ],
+    },
+    {
+      name: 'Vector DB',
+      icon: <CircleStackIcon className="h-6 w-6" />,
+      description: 'Vector database for embeddings',
+      status: 'disconnected',
+      fields: [
+        {
+          key: 'vectordb_endpoint',
+          label: 'Endpoint',
+          type: 'url',
+          value: '',
+          placeholder: 'https://your-vectordb.com',
+          required: true,
+        },
+        {
+          key: 'vectordb_index',
+          label: 'Index',
+          type: 'text',
+          value: '',
+          placeholder: 'index name',
+          required: true,
+        },
+        {
+          key: 'vectordb_key',
+          label: 'API Key',
+          type: 'password',
+          value: '',
+          placeholder: 'Vector DB API key',
+          required: true,
+          masked: true,
+        },
+      ],
+    },
+    {
+      name: 'Blob Storage',
+      icon: <ArchiveBoxIcon className="h-6 w-6" />,
+      description: 'Azure Blob Storage for files',
+      status: 'disconnected',
+      fields: [
+        {
+          key: 'blob_connection_string',
+          label: 'Connection String',
+          type: 'password',
+          value: '',
+          placeholder: 'Azure Blob connection string',
+          required: true,
+          masked: true,
+        },
+        {
+          key: 'blob_container',
+          label: 'Container',
+          type: 'text',
+          value: '',
+          placeholder: 'container name',
+          required: true,
         },
       ],
     },

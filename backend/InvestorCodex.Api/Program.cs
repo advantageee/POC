@@ -21,12 +21,19 @@ builder.Services.Configure<TwitterAPISettings>(
     builder.Configuration.GetSection(TwitterAPISettings.SectionName));
 builder.Services.Configure<ContextFeedSettings>(
     builder.Configuration.GetSection(ContextFeedSettings.SectionName));
+
+builder.Services.Configure<VectorDbSettings>(
+    builder.Configuration.GetSection(VectorDbSettings.SectionName));
+builder.Services.Configure<BlobStorageSettings>(
+    builder.Configuration.GetSection(BlobStorageSettings.SectionName));
+
 builder.Services.Configure<ExportSettings>(
     builder.Configuration.GetSection(ExportSettings.SectionName));
 
 // In-memory settings storage
 builder.Services.AddSingleton<ISettingsService>(sp =>
     new InMemorySettingsService(sp.GetRequiredService<IConfiguration>()));
+
 
 // Add HTTP clients for external services
 builder.Services.AddHttpClient<IApolloService, ApolloService>();
