@@ -17,6 +17,10 @@ builder.Services.Configure<TwitterAPISettings>(
     builder.Configuration.GetSection(TwitterAPISettings.SectionName));
 builder.Services.Configure<ContextFeedSettings>(
     builder.Configuration.GetSection(ContextFeedSettings.SectionName));
+builder.Services.Configure<VectorDbSettings>(
+    builder.Configuration.GetSection(VectorDbSettings.SectionName));
+builder.Services.Configure<BlobStorageSettings>(
+    builder.Configuration.GetSection(BlobStorageSettings.SectionName));
 
 // Add HTTP clients for external services
 builder.Services.AddHttpClient<IApolloService, ApolloService>();
