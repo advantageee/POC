@@ -76,9 +76,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
-        </div>
-
-        {/* Navigation */}
+        </div>        {/* Navigation */}
         <nav className="mt-8 px-4">
           <ul className="space-y-2">
             {navigation.map((item) => {
@@ -121,7 +119,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Administration
             </h3>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-3 space-y-2">
               {adminNavigation.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
