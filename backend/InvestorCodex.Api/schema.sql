@@ -1,10 +1,21 @@
 -- Create database schema for InvestorCodex
 
 -- Drop existing tables if they exist
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS signals;
 DROP TABLE IF EXISTS investments;
 DROP TABLE IF EXISTS contacts;
 DROP TABLE IF EXISTS companies;
+
+-- Users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255),
+    roles TEXT[] DEFAULT ARRAY['Viewer'],
+    last_login_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Companies table
 CREATE TABLE companies (
@@ -70,6 +81,10 @@ CREATE TABLE signals (
 );
 
 -- Insert some sample data
+INSERT INTO users (email, name, roles)
+VALUES ('admin@investorcodex.com', 'Admin User', ARRAY['Admin'])
+ON CONFLICT DO NOTHING;
+
 INSERT INTO companies (name, domain, industry, location, headcount, funding_stage, summary, investment_score, tags, risk_flags) VALUES
 ('Apple Inc.', 'apple.com', 'Consumer Electronics', 'Cupertino, CA', 164000, 'Public', 'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.', 9.5, ARRAY['technology', 'consumer', 'innovation'], ARRAY[]::TEXT[]),
 ('Microsoft Corporation', 'microsoft.com', 'Software', 'Redmond, WA', 221000, 'Public', 'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.', 9.3, ARRAY['technology', 'enterprise', 'cloud'], ARRAY[]::TEXT[]),

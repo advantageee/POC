@@ -29,6 +29,7 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
 builder.Services.AddScoped<ISignalRepository, SignalRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Add external API services
 builder.Services.AddScoped<IApolloService, ApolloService>();
