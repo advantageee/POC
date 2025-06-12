@@ -199,28 +199,54 @@ public class SignalDetectionService : ISignalDetectionService
             _logger.LogError(ex, "Error calculating signal confidence");
             return signal.Confidence; // Return original confidence if calculation fails
         }
-    }
-
-    public async Task<List<Signal>> GetHighConfidenceSignalsAsync(float minConfidence = 0.7f, int limit = 50)
-    {        try
+    }    public async Task<List<Signal>> GetHighConfidenceSignalsAsync(float minConfidence = 0.7f, int limit = 50)
+    {
+        try
         {
-            var allSignalsResult = await _signalRepository.GetSignalsAsync(1, limit * 2); // Get more to filter
-            var highConfidenceSignals = new List<Signal>();
+            var allSignals = new List<Signal>();
 
-            foreach (var signal in allSignalsResult.signals)
+            // Get signals from database first
+            var dbSignalsResult = await _signalRepository.GetSignalsAsync(1, limit);
+            allSignals.AddRange(dbSignalsResult.signals);
+
+            // Generate fresh signals from Twitter if we don't have enough recent ones
+            var recentSignals = allSignals.Where(s => s.CreatedAt > DateTime.UtcNow.AddHours(-24)).ToList();
+            if (recentSignals.Count < limit / 2)
             {
-                var confidence = await CalculateSignalConfidenceAsync(signal);
-                if (confidence >= minConfidence)
+                _logger.LogInformation("Generating fresh signals from Twitter");
+                var twitterSignals = await _twitterService.GetSignalsAsync(null, limit);
+                
+                // Process and save Twitter signals
+                foreach (var twitterSignal in twitterSignals)
                 {
-                    signal.Confidence = confidence; // Update with calculated confidence
-                    highConfidenceSignals.Add(signal);
-                }
-            }
+                    var confidence = await CalculateSignalConfidenceAsync(twitterSignal);
+                    twitterSignal.Confidence = confidence;
+                    
+                    // Save to database
+                    try
+                    {
+                        await _signalRepository.CreateSignalAsync(twitterSignal);
+                        allSignals.Add(twitterSignal);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to save Twitter signal");
+                    }
+                }            }
 
-            return highConfidenceSignals
+            // Note: News signals extraction requires specific company context
+            // For general signal detection, we rely on Twitter signals and database results
+            _logger.LogInformation("News signals require specific company context, skipping general news extraction");
+
+            // Filter for high confidence and return
+            var highConfidenceSignals = allSignals
+                .Where(s => s.Confidence >= minConfidence)
                 .OrderByDescending(s => s.Confidence)
+                .ThenByDescending(s => s.CreatedAt)
                 .Take(limit)
                 .ToList();
+
+            return highConfidenceSignals;
         }
         catch (Exception ex)
         {

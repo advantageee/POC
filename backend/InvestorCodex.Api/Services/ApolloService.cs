@@ -127,8 +127,7 @@ public class ApolloService : IApolloService
                     break; // Use first successful result
                 }
             }
-            
-            // If Apollo returned data, return it; otherwise combine with database results
+              // If Apollo returned data, return it; otherwise return database results
             if (bestResult.Data.Any())
             {
                 return bestResult;
@@ -136,23 +135,30 @@ public class ApolloService : IApolloService
             else
             {
                 _logger.LogInformation("Apollo API returned no data, returning database results: {Count} companies", dbResult.Data.Count);
-                return dbResult.Data.Any() ? dbResult : GetFallbackCompanies(page, pageSize);
+                return dbResult; // Return database results even if empty
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in GetCompaniesAsync, falling back to database");
             
-            // Fallback to database
+            // Fallback to database only
             try
             {
                 var dbResult = await _companyRepository.GetCompaniesAsync(page, pageSize, search);
-                return dbResult.Data.Any() ? dbResult : GetFallbackCompanies(page, pageSize);
+                return dbResult; // Return database results even if empty
             }
             catch (Exception dbEx)
             {
                 _logger.LogError(dbEx, "Database fallback also failed");
-                return GetFallbackCompanies(page, pageSize);
+                return new PaginatedResponse<Company>
+                {
+                    Data = new List<Company>(),
+                    Page = page,
+                    PageSize = pageSize,
+                    Total = 0,
+                    TotalPages = 0
+                };
             }
         }
     }    public async Task<PaginatedResponse<Contact>> GetContactsAsync(int page, int pageSize, string? search = null)
@@ -611,19 +617,19 @@ public class ApolloService : IApolloService
                     TotalPages = 0
                 };
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching companies from Apollo API");
-            return new PaginatedResponse<Company>
+        }            catch (Exception ex)
             {
-                Data = new List<Company>(),
-                Page = page,
-                PageSize = pageSize,
-                Total = 0,
-                TotalPages = 0
-            };
-        }
+                _logger.LogError(ex, "Error fetching companies from Apollo API for search: {Search}", search);
+                // Don't return fallback data - let the caller handle the empty result
+                return new PaginatedResponse<Company>
+                {
+                    Data = new List<Company>(),
+                    Page = page,
+                    PageSize = pageSize,
+                    Total = 0,
+                    TotalPages = 0
+                };
+            }
     }
 
     private async Task<PaginatedResponse<Contact>> GetContactsFromApolloAsync(int page, int pageSize, string? search = null)
