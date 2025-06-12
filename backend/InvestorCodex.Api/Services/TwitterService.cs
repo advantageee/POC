@@ -3,6 +3,7 @@ using InvestorCodex.Api.Models;
 using InvestorCodex.Api.Configuration;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace InvestorCodex.Api.Services;
 
@@ -16,12 +17,14 @@ public class TwitterService : ITwitterService
     private readonly HttpClient _httpClient;
     private readonly TwitterAPISettings _settings;
     private readonly ILogger<TwitterService> _logger;
+    private readonly IMemoryCache _cache;
 
-    public TwitterService(HttpClient httpClient, IOptions<TwitterAPISettings> settings, ILogger<TwitterService> logger)
+    public TwitterService(HttpClient httpClient, IOptions<TwitterAPISettings> settings, ILogger<TwitterService> logger, IMemoryCache cache)
     {
         _httpClient = httpClient;
         _settings = settings.Value;
         _logger = logger;
+        _cache = cache;
         
         _httpClient.DefaultRequestHeaders.Clear();
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.BearerToken);
@@ -38,7 +41,32 @@ public class TwitterService : ITwitterService
             var encodedQuery = Uri.EscapeDataString(query);
             var url = $"https://api.twitter.com/2/tweets/search/recent?query={encodedQuery}&max_results={Math.Max(10, Math.Min(maxResults, 100))}&tweet.fields=created_at,author_id,public_metrics,context_annotations&expansions=author_id&user.fields=username,name,verified";
 
-            var response = await _httpClient.GetAsync(url);
+            if (_cache.TryGetValue(url, out List<Signal>? cachedSignals))
+            {
+                _logger.LogInformation("Serving Twitter results from cache for query: {Query}", query);
+                return cachedSignals!;
+            }
+
+            HttpResponseMessage response;
+            var retries = 0;
+            const int maxRetries = 3;
+
+            while (true)
+            {
+                response = await _httpClient.GetAsync(url);
+
+                if (response.StatusCode == (System.Net.HttpStatusCode)429 && retries < maxRetries)
+                {
+                    var retryAfter = response.Headers.RetryAfter?.Delta?.TotalSeconds ?? 1;
+                    var delaySeconds = retryAfter * Math.Pow(2, retries);
+                    _logger.LogWarning("Twitter rate limit hit. Retrying in {DelaySeconds}s", delaySeconds);
+                    await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+                    retries++;
+                    continue;
+                }
+
+                break;
+            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -48,7 +76,11 @@ public class TwitterService : ITwitterService
                     PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
                 });
 
-                return twitterResponse?.Data?.Select(MapToSignal).ToList() ?? GetFallbackSignals(companyName);
+                var signals = twitterResponse?.Data?.Select(MapToSignal).ToList() ?? GetFallbackSignals(companyName);
+
+                _cache.Set(url, signals, TimeSpan.FromMinutes(1));
+
+                return signals;
             }
             else
             {

@@ -12,6 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 // source control.
 builder.Configuration.AddEnvironmentVariables();
 
+// Add in-memory caching
+builder.Services.AddMemoryCache();
+
 // Add configuration settings
 builder.Services.Configure<AdvantageAISettings>(
     builder.Configuration.GetSection(AdvantageAISettings.SectionName));
