@@ -12,9 +12,11 @@ import {
   XMarkIcon,
   Squares2X2Icon,
   Cog6ToothIcon,
+  NewspaperIcon,
   UserGroupIcon,
   ChartBarIcon,
   UsersIcon,
+
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -24,17 +26,22 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
+  { name: 'NLWeb', href: '/nlweb', icon: NewspaperIcon },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon },
   { name: 'Contacts', href: '/contacts', icon: UsersIcon },
   { name: 'Alerts', href: '/alerts', icon: ExclamationTriangleIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
   { name: 'Export', href: '/exports', icon: DocumentArrowDownIcon },
+
+  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
+  { name: 'Admin', href: '/admin', icon: Cog6ToothIcon },
 ];
 
 const adminNavigation = [
   { name: 'User Management', href: '/admin/users', icon: UserGroupIcon },
   { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon },
+
 ];
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
