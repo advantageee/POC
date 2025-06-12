@@ -9,6 +9,7 @@ import type {
   ExportRequest,
   ExportJob,
   SimilarCompany,
+  MCPContext,
 } from '@/types';
 
 export const companiesApi = {
@@ -157,4 +158,8 @@ export const contactsApi = {
 
   delete: (id: string): Promise<void> =>
     api.delete(`/api/contacts/${id}`),
+};
+
+export const contextApi = {
+  get: (id: string): Promise<MCPContext> => api.get(`/context?id=${id}`),
 };

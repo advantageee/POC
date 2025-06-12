@@ -12,6 +12,7 @@ import {
   XMarkIcon,
   Squares2X2Icon,
   Cog6ToothIcon,
+  NewspaperIcon,
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -21,6 +22,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
+  { name: 'NLWeb', href: '/nlweb', icon: NewspaperIcon },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon },
   { name: 'Alerts', href: '/alerts', icon: ExclamationTriangleIcon },
   { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
