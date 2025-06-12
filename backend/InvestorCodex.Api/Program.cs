@@ -18,6 +18,9 @@ builder.Services.Configure<TwitterAPISettings>(
 builder.Services.Configure<ContextFeedSettings>(
     builder.Configuration.GetSection(ContextFeedSettings.SectionName));
 
+// In-memory store for mutable settings
+builder.Services.AddSingleton<SettingsStore>();
+
 // Add HTTP clients for external services
 builder.Services.AddHttpClient<IApolloService, ApolloService>();
 builder.Services.AddHttpClient<ITwitterService, TwitterService>();

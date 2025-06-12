@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { api } from '@/lib/api/client';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -49,13 +50,12 @@ export default function SettingsPage() {
       icon: <GlobeAltIcon className="h-6 w-6" />,
       description: 'Company and contact data from Apollo.io API',
       status: 'connected',
-      lastTested: '2 minutes ago',
       fields: [
         {
           key: 'apollo_api_key',
           label: 'API Key',
           type: 'password',
-          value: 'Grxi_g98_sg9B0gwGmDnnA',
+          value: '',
           placeholder: 'Enter Apollo.io API key',
           required: true,
           masked: true,
@@ -64,7 +64,7 @@ export default function SettingsPage() {
           key: 'apollo_base_url',
           label: 'Base URL',
           type: 'url',
-          value: 'https://api.apollo.io/v1',
+          value: '',
           placeholder: 'https://api.apollo.io/v1',
           required: true,
         },
@@ -75,13 +75,12 @@ export default function SettingsPage() {
       icon: <ChatBubbleLeftRightIcon className="h-6 w-6" />,
       description: 'Real-time signals and social media monitoring',
       status: 'connected',
-      lastTested: '5 minutes ago',
       fields: [
         {
           key: 'twitter_api_key',
           label: 'API Key',
           type: 'password',
-          value: 'Kt8Bg1eDCHIK0BwxLYDB6VH1y',
+          value: '',
           placeholder: 'Enter Twitter API key',
           required: true,
           masked: true,
@@ -90,7 +89,7 @@ export default function SettingsPage() {
           key: 'twitter_api_secret',
           label: 'API Secret',
           type: 'password',
-          value: 'b47Bc8CQRiwoiyqFmngq8GJ9cpUTi8VOV8nzUOrlpPShkjQYNd',
+          value: '',
           placeholder: 'Enter Twitter API secret',
           required: true,
           masked: true,
@@ -99,7 +98,7 @@ export default function SettingsPage() {
           key: 'twitter_bearer_token',
           label: 'Bearer Token',
           type: 'password',
-          value: 'AAAAAAAAAAAAAAAAAAAAAGcf2QEAAAAAhWC0%2B50Re7UP6BfNGJn%2Bk%2Bx8Sos%3D8UYFuZ9Q4sR8bHnETXUUueZjzFMiCsgYIAXW0eqgFYYMuWEnnf',
+          value: '',
           placeholder: 'Enter Twitter Bearer token',
           required: true,
           masked: true,
@@ -111,13 +110,12 @@ export default function SettingsPage() {
       icon: <CloudIcon className="h-6 w-6" />,
       description: 'AI-powered analysis and enrichment services',
       status: 'connected',
-      lastTested: '1 minute ago',
       fields: [
         {
           key: 'openai_endpoint',
           label: 'Endpoint URL',
           type: 'url',
-          value: 'https://AdvantageAI.openai.azure.com/',
+          value: '',
           placeholder: 'https://your-resource.openai.azure.com/',
           required: true,
         },
@@ -125,7 +123,7 @@ export default function SettingsPage() {
           key: 'openai_api_key',
           label: 'API Key',
           type: 'password',
-          value: '6a49d2914c1b4066b1c7046feaa3f95a',
+          value: '',
           placeholder: 'Enter Azure OpenAI API key',
           required: true,
           masked: true,
@@ -134,7 +132,7 @@ export default function SettingsPage() {
           key: 'openai_model',
           label: 'Model',
           type: 'text',
-          value: 'gpt-4o',
+          value: '',
           placeholder: 'gpt-4o',
           required: true,
         },
@@ -145,13 +143,12 @@ export default function SettingsPage() {
       icon: <CloudIcon className="h-6 w-6" />,
       description: 'PostgreSQL database connection',
       status: 'connected',
-      lastTested: 'Just now',
       fields: [
         {
           key: 'db_connection_string',
           label: 'Connection String',
           type: 'password',
-          value: 'Host=localhost;Database=investorcodex;Username=postgres;Password=password',
+          value: '',
           placeholder: 'Host=localhost;Database=investorcodex;Username=postgres;Password=yourpassword',
           required: true,
           masked: true,
@@ -161,16 +158,30 @@ export default function SettingsPage() {
   ]);
 
   useEffect(() => {
-    // Initialize masked fields
-    const initialMaskedFields = new Set<string>();
-    services.forEach(service => {
-      service.fields.forEach(field => {
-        if (field.masked) {
-          initialMaskedFields.add(`${service.name}_${field.key}`);
-        }
-      });
-    });
-    setMaskedFields(initialMaskedFields);
+    const loadSettings = async () => {
+      try {
+        const data = await api.get<Record<string, string>>('/api/settings');
+        const updated = services.map(service => ({
+          ...service,
+          fields: service.fields.map(field => ({
+            ...field,
+            value: data[field.key] ?? field.value,
+          })),
+        }));
+        setServices(updated);
+
+        const initialMasked = new Set<string>();
+        updated.forEach(s => {
+          s.fields.forEach(f => {
+            if (f.masked) initialMasked.add(`${s.name}_${f.key}`);
+          });
+        });
+        setMaskedFields(initialMasked);
+      } catch (err) {
+        console.error('Failed to load settings', err);
+      }
+    };
+    loadSettings();
   }, []);
 
   const getStatusIcon = (status: string) => {
@@ -257,9 +268,14 @@ export default function SettingsPage() {
   const saveConfiguration = async () => {
     try {
       setLoading(true);
-      // TODO: Implement real API call to save configuration
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+      const payload: Record<string, string> = {};
+      services.forEach(service => {
+        service.fields.forEach(field => {
+          payload[field.key] = field.value;
+        });
+      });
+      await api.post('/api/settings', payload);
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
