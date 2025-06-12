@@ -56,18 +56,8 @@ public class ApolloService : IApolloService
     }    public async Task<PaginatedResponse<Company>> GetCompaniesAsync(int page, int pageSize, string? search = null)
     {        try
         {
-            // First check if we have companies in the database
-            var dbResult = await _companyRepository.GetCompaniesAsync(page, pageSize, search);
-            
-            // If we have enough data in database, return it
-            if (dbResult.Data.Count >= pageSize || dbResult.Total > pageSize)
-            {
-                _logger.LogInformation("Returning {Count} companies from database", dbResult.Data.Count);
-                return dbResult;
-            }
-            
-            // If database is sparse, try to get from Apollo and supplement
-            _logger.LogInformation("Database has limited data, querying Apollo API for search: {Search}", search ?? "default");
+            // Always try Apollo.io first for real-time data
+            _logger.LogInformation("Querying Apollo API first for search: {Search}", search ?? "default");
             
             // Try the user's search query first, then fallback to investor terms if no results
             var searchTerms = new List<string>();
@@ -126,33 +116,41 @@ public class ApolloService : IApolloService
                     
                     break; // Use first successful result
                 }
-            }
-            
-            // If Apollo returned data, return it; otherwise combine with database results
+            }              // If Apollo returned data, return it; otherwise fallback to database
             if (bestResult.Data.Any())
             {
                 return bestResult;
             }
             else
             {
-                _logger.LogInformation("Apollo API returned no data, returning database results: {Count} companies", dbResult.Data.Count);
-                return dbResult.Data.Any() ? dbResult : GetFallbackCompanies(page, pageSize);
+                // Apollo returned no data, fallback to database
+                _logger.LogInformation("Apollo API returned no data, falling back to database");
+                var dbResult = await _companyRepository.GetCompaniesAsync(page, pageSize, search);
+                _logger.LogInformation("Database returned {Count} companies", dbResult.Data.Count);
+                return dbResult;
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in GetCompaniesAsync, falling back to database");
             
-            // Fallback to database
+            // Fallback to database only
             try
             {
                 var dbResult = await _companyRepository.GetCompaniesAsync(page, pageSize, search);
-                return dbResult.Data.Any() ? dbResult : GetFallbackCompanies(page, pageSize);
+                return dbResult; // Return database results even if empty
             }
             catch (Exception dbEx)
             {
                 _logger.LogError(dbEx, "Database fallback also failed");
-                return GetFallbackCompanies(page, pageSize);
+                return new PaginatedResponse<Company>
+                {
+                    Data = new List<Company>(),
+                    Page = page,
+                    PageSize = pageSize,
+                    Total = 0,
+                    TotalPages = 0
+                };
             }
         }
     }    public async Task<PaginatedResponse<Contact>> GetContactsAsync(int page, int pageSize, string? search = null)
@@ -579,14 +577,18 @@ public class ApolloService : IApolloService
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync("https://api.apollo.io/v1/mixed_companies/search", content);
-            
-            if (response.IsSuccessStatusCode)
+              if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Apollo API Response: {Response}", responseJson);
+                
                 var apolloResponse = JsonSerializer.Deserialize<ApolloCompanyResponse>(responseJson, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
                 });
+                
+                _logger.LogInformation("Parsed Apollo Response - Companies Count: {Count}, Total: {Total}", 
+                    apolloResponse?.Companies?.Count ?? 0, apolloResponse?.TotalEntries ?? 0);
 
                 var companies = apolloResponse?.Companies?.Select(MapToCompany).ToList() ?? new List<Company>();
                 
@@ -611,19 +613,19 @@ public class ApolloService : IApolloService
                     TotalPages = 0
                 };
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching companies from Apollo API");
-            return new PaginatedResponse<Company>
+        }            catch (Exception ex)
             {
-                Data = new List<Company>(),
-                Page = page,
-                PageSize = pageSize,
-                Total = 0,
-                TotalPages = 0
-            };
-        }
+                _logger.LogError(ex, "Error fetching companies from Apollo API for search: {Search}", search);
+                // Don't return fallback data - let the caller handle the empty result
+                return new PaginatedResponse<Company>
+                {
+                    Data = new List<Company>(),
+                    Page = page,
+                    PageSize = pageSize,
+                    Total = 0,
+                    TotalPages = 0
+                };
+            }
     }
 
     private async Task<PaginatedResponse<Contact>> GetContactsFromApolloAsync(int page, int pageSize, string? search = null)

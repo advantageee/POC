@@ -12,15 +12,24 @@ public class CompaniesController : ControllerBase
     private readonly ICompanyRepository _companyRepository;
     private readonly IApolloService _apolloService;
     private readonly ILogger<CompaniesController> _logger;
+    private readonly IContactRepository _contactRepository;
+    private readonly IInvestmentRepository _investmentRepository;
+    private readonly ISignalRepository _signalRepository;
 
     public CompaniesController(
         ICompanyRepository companyRepository, 
         IApolloService apolloService, 
-        ILogger<CompaniesController> logger)
+        ILogger<CompaniesController> logger,
+        IContactRepository contactRepository,
+        IInvestmentRepository investmentRepository,
+        ISignalRepository signalRepository)
     {
         _companyRepository = companyRepository;
         _apolloService = apolloService;
         _logger = logger;
+        _contactRepository = contactRepository;
+        _investmentRepository = investmentRepository;
+        _signalRepository = signalRepository;
     }
 
     [HttpGet]
@@ -33,24 +42,41 @@ public class CompaniesController : ControllerBase
         [FromQuery] float? investmentScoreMin = null,
         [FromQuery] float? investmentScoreMax = null,
         [FromQuery] string[]? tags = null)
-    {
-        try
+    {        try
         {
-            // Try to get real data from Apollo first
-            _logger.LogInformation("Fetching companies from Apollo API");
-            var apolloResult = await _apolloService.GetCompaniesAsync(page, pageSize, search);
+            // Use Apollo service which handles Apollo.io prioritization and database fallback internally
+            _logger.LogInformation("Fetching companies via Apollo service");
+            var result = await _apolloService.GetCompaniesAsync(page, pageSize, search);
             
-            if (apolloResult.Data.Any())
+            // Apply additional filters that Apollo service doesn't handle
+            if (industry != null || fundingStage != null || investmentScoreMin != null || investmentScoreMax != null || tags != null)
             {
-                _logger.LogInformation("Successfully fetched {Count} companies from Apollo API", apolloResult.Data.Count);
-                return Ok(apolloResult);
+                _logger.LogInformation("Additional filters detected, applying post-processing to Apollo results");
+                
+                var filteredData = result.Data.AsEnumerable();
+                
+                if (industry != null && industry.Length > 0)
+                    filteredData = filteredData.Where(c => industry.Contains(c.Industry));
+                    
+                if (fundingStage != null && fundingStage.Length > 0)
+                    filteredData = filteredData.Where(c => fundingStage.Contains(c.FundingStage));
+                    
+                if (investmentScoreMin.HasValue)
+                    filteredData = filteredData.Where(c => c.InvestmentScore >= investmentScoreMin.Value);
+                    
+                if (investmentScoreMax.HasValue)
+                    filteredData = filteredData.Where(c => c.InvestmentScore <= investmentScoreMax.Value);
+                    
+                if (tags != null && tags.Length > 0)
+                    filteredData = filteredData.Where(c => c.Tags?.Any(tag => tags.Contains(tag)) == true);
+                
+                var filteredList = filteredData.ToList();
+                result.Data = filteredList;
+                result.Total = filteredList.Count;
+                result.TotalPages = (int)Math.Ceiling((double)filteredList.Count / pageSize);
             }
-
-            // Fallback to database if Apollo fails
-            _logger.LogInformation("Apollo API returned no data, falling back to database");
-            var result = await _companyRepository.GetCompaniesAsync(
-                page, pageSize, search, industry, fundingStage, 
-                investmentScoreMin, investmentScoreMax, tags);
+            
+            _logger.LogInformation("Returning {Count} companies", result.Data.Count);
             return Ok(result);
         }
         catch (Exception ex)
@@ -171,6 +197,91 @@ public class CompaniesController : ControllerBase
         {
             _logger.LogError(ex, "Error during Apollo bulk load");
             return StatusCode(500, new { error = "Apollo bulk load failed", message = ex.Message });
+        }
+    }
+
+    [HttpGet("{id}/contacts")]
+    public async Task<ActionResult<List<Contact>>> GetCompanyContacts(Guid id)
+    {
+        try
+        {
+            // First verify the company exists
+            var company = await _companyRepository.GetCompanyByIdAsync(id);
+            if (company == null)
+            {
+                return NotFound($"Company with ID {id} not found");
+            }
+
+            // Get contacts for this company
+            var contactsResult = await _contactRepository.GetContactsAsync(
+                page: 1, 
+                pageSize: 1000, 
+                search: null, 
+                companyId: id, 
+                personas: null);
+                
+            return Ok(contactsResult.Data);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred while fetching company contacts: {ex.Message}");
+        }
+    }
+
+    [HttpGet("{id}/investments")]
+    public async Task<ActionResult<List<Investment>>> GetCompanyInvestments(Guid id)
+    {
+        try
+        {
+            // First verify the company exists
+            var company = await _companyRepository.GetCompanyByIdAsync(id);
+            if (company == null)
+            {
+                return NotFound($"Company with ID {id} not found");
+            }
+
+            // Get investments for this company
+            var investmentsResult = await _investmentRepository.GetInvestmentsAsync(
+                page: 1,
+                pageSize: 1000,
+                search: null,
+                companyId: id,
+                rounds: null,
+                minAmount: null,
+                maxAmount: null);
+
+            return Ok(investmentsResult.Data);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred while fetching company investments: {ex.Message}");
+        }
+    }    [HttpGet("{id}/signals")]
+    public async Task<ActionResult<List<Signal>>> GetCompanySignals(Guid id)
+    {
+        try
+        {
+            // First verify the company exists
+            var company = await _companyRepository.GetCompanyByIdAsync(id);
+            if (company == null)
+            {
+                return NotFound($"Company with ID {id} not found");
+            }
+
+            // Get signals for this company
+            var signalsResult = await _signalRepository.GetSignalsAsync(
+                page: 1,
+                pageSize: 1000,
+                search: null,
+                companyId: id,
+                types: null,
+                severities: null);
+
+            return Ok(signalsResult.signals);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred while fetching company signals: {ex.Message}");
         }
     }
 }

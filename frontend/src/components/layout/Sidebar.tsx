@@ -13,6 +13,10 @@ import {
   Squares2X2Icon,
   Cog6ToothIcon,
   NewspaperIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+  UsersIcon,
+
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -24,11 +28,20 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
   { name: 'NLWeb', href: '/nlweb', icon: NewspaperIcon },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon },
+  { name: 'Contacts', href: '/contacts', icon: UsersIcon },
   { name: 'Alerts', href: '/alerts', icon: ExclamationTriangleIcon },
+  { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
   { name: 'Export', href: '/exports', icon: DocumentArrowDownIcon },
+
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   { name: 'Admin', href: '/admin', icon: Cog6ToothIcon },
+];
+
+const adminNavigation = [
+  { name: 'User Management', href: '/admin/users', icon: UserGroupIcon },
+  { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon },
+
 ];
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
@@ -70,9 +83,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
-        </div>
-
-        {/* Navigation */}
+        </div>        {/* Navigation */}
         <nav className="mt-8 px-4">
           <ul className="space-y-2">
             {navigation.map((item) => {
@@ -109,6 +120,48 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               );
             })}
           </ul>
+
+          {/* Admin Section */}
+          <div className="mt-8">
+            <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Administration
+            </h3>
+            <ul className="mt-3 space-y-2">
+              {adminNavigation.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
+                
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      onClick={() => {
+                        // Close mobile sidebar when navigating
+                        if (isOpen) onToggle();
+                      }}
+                      className={cn(
+                        'group flex items-center px-4 py-3 text-callout font-medium rounded-xl transition-all duration-200 interactive',
+                        isActive
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                      )}
+                    >
+                      <Icon 
+                        className={cn(
+                          'mr-4 h-6 w-6 transition-colors',
+                          isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'
+                        )} 
+                      />
+                      {item.name}
+                      {isActive && (
+                        <div className="ml-auto w-1 h-1 bg-white rounded-full" />
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </nav>
 
         {/* Bottom section */}
