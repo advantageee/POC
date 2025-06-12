@@ -8,6 +8,10 @@ using InvestorCodex.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Include environment variables so sensitive values can be supplied outside of
+// source control.
+builder.Configuration.AddEnvironmentVariables();
+
 // Add configuration settings
 builder.Services.Configure<AdvantageAISettings>(
     builder.Configuration.GetSection(AdvantageAISettings.SectionName));
