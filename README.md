@@ -9,7 +9,7 @@ This repository contains a proof-of-concept implementation for the Investor Code
   * **InvestorCodex.SyncService** – Worker service that syncs companies and contacts from Apollo into PostgreSQL
   * **InvestmentFilingETL** – Python scripts that collect and enrich public investment filings
 * `frontend/` – Minimal Next.js app demonstrating the dashboard
-  * Includes an **API Configuration** screen under `/api-config`
+  * Includes an **API Configuration** screen under `/settings`
 * `docs/` – Project documentation including the full functional specification
 
 The project is at an early stage and currently only includes minimal scaffolding.
